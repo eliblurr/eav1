@@ -3,17 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal, engine
 
 from routers.auth_router import models
-from routers.category_router import models
-from routers.events_router import models
-from routers.priorities_router import models
-from routers.t_c_router import models
-from routers.location_router import models
-from routers.reviews_router import models
-from routers.policies_router import models
-from routers.faqs_router import models
-from routers.about_us_router import models 
-from routers.announcement_router import models
-from routers.subscriptions_router import models
+# from routers.category_router import models
+# from routers.events_router import models
+# from routers.priorities_router import models
+# from routers.t_c_router import models
+# from routers.location_router import models
+# from routers.reviews_router import models
+# from routers.policies_router import models
+# from routers.faqs_router import models
+# from routers.about_us_router import models 
+# from routers.announcement_router import models
+# from routers.subscriptions_router import models
+from routers.users_router import models
 
 import os
 
@@ -87,30 +88,34 @@ models.Base.metadata.create_all(bind=engine)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/authenticate")
 
 from routers.auth_router import main as auth
-from routers.product_router import main as product
-from routers.promo_router import main as promo
-from routers.boards_router import main as boards
-from routers.favorites_router import main as favorites
-from routers.category_router import main as category
-from routers.order_router import main as order
-from routers.events_router import main as events
-from routers.priorities_router import main as priorities
-from routers.location_router import main as location
-from routers.policies_router import main as policies
-from routers.faqs_router import main as faqs
-from routers.about_us_router import main as about_us
-from routers.announcement_router import main as announcement
-from routers.subscriptions_router import main as subscriptions
+# from routers.product_router import main as product
+# from routers.promo_router import main as promo
+# from routers.boards_router import main as boards
+# from routers.favorites_router import main as favorites
+# from routers.category_router import main as category
+# from routers.order_router import main as order
+# from routers.events_router import main as events
+# from routers.priorities_router import main as priorities
+# from routers.location_router import main as location
+# from routers.policies_router import main as policies
+# from routers.faqs_router import main as faqs
+# from routers.about_us_router import main as about_us
+# from routers.announcement_router import main as announcement
+# from routers.subscriptions_router import main as subscriptions
 
-from routers.t_c_router import main as t_c
-from routers.reviews_router import main as reviews
+# from routers.t_c_router import main as t_c
+# from routers.reviews_router import main as reviews
+from routers.users_router import main as users
+
 # from media import main as media
 
 
 
 
-api.include_router(auth.router,prefix="/api/users",tags=["user"])
-api.include_router(product.router,prefix="/api/products",tags=["product"])
+# api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
+api.include_router(users.router,prefix="/api/users",tags=["user"])
+
+# api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
 # api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
@@ -120,7 +125,7 @@ api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 # api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(location.router,prefix="/api/locations",tags=["location"])
-api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
+# api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 # api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
 # api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])

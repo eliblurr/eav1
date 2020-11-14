@@ -20,6 +20,8 @@ class UserUpdate(BaseModel):
     image_url: Optional[str]
     is_verified: Optional[bool]
 
+    
+
 class User(UserBase):
     pass
 
@@ -36,9 +38,15 @@ class UserSummary(BaseModel):
 class ResetPassword(BaseModel):
     password: str
 
+    class Config:
+        orm_mode = True
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+    class Config:
+        orm_mode = True
 
 # # Properties to return to client
 class RevokedToken(BaseModel):
