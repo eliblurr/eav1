@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from . import crud, schemas,models
 from typing import List, Optional
@@ -11,7 +11,7 @@ import traceback
 from main import get_db, oauth2_scheme
 import utils
 
-from services.email import simple_send
+from services.email import simple_send, send_in_background
 
 access_token_expires = timedelta(minutes=30)
 
@@ -53,13 +53,13 @@ async def update_password(id: int, payload: schemas.ResetPassword, db: Session =
 
 # request password reset
 @router.post("/request")
-async def request_password_reset():
+async def request_password_reset(background_tasks: BackgroundTasks):
     # user = await crud.get_user_by_id(id, db)
     # if user is None:
     #     raise HTTPException(status_code=404)
     # try:
-    await simple_send({'email':['elvissegbawu@gmail.com']})
-    # await simple_send()
+    await send_in_background(background_tasks)
+    # await simple_send({'email':['elvissegbawu@gmail.com']})
     # raise HTTPException(status_code=200)
     # except:
     #     print(traceback.format_exc())
