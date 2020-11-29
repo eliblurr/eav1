@@ -6,9 +6,12 @@ from pydantic import UUID4, EmailStr
 import jwt
 from datetime import timedelta
 import sys
+import traceback
 
 from main import get_db, oauth2_scheme
 import utils
+
+from services.email import simple_send
 
 access_token_expires = timedelta(minutes=30)
 
@@ -44,9 +47,29 @@ async def read_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 
 async def update_user(id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
     return await crud.update_user(id,payload,db)
 
-@router.patch("/{id}/resetpassword", response_model=schemas.User)
+@router.patch("/{id}/password", response_model=schemas.User)
 async def update_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
     return await crud.reset_password(id,payload,db)
+
+# request password reset
+@router.post("/{id}/request")
+async def request_password_reset(id: int, db: Session = Depends(get_db)):
+    # user = await crud.get_user_by_id(id, db)
+    # if user is None:
+    #     raise HTTPException(status_code=404)
+    # try:
+    await simple_send({'email':['elvissegbawu@gmail.com']})
+    # await simple_send()
+    # raise HTTPException(status_code=200)
+    # except:
+    #     print(traceback.format_exc())
+    #     raise HTTPException(status_code=500)
+
+    # await simple_send(email: EmailSchema,subject: str, body: List[str])
+
+    
+
+
 
 
 #get current user

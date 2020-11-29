@@ -8,7 +8,13 @@ from main import oauth2_scheme
 
 import os
 
-#obtain from environment variable in production
+import random
+import string
+
+uppercase_and_digits = string.ascii_uppercase + string.digits
+
+lowercase_and_digits = string.ascii_lowercase + string.digits
+
 SECRET_KEY = "fsdfsdfsdfsdflhiugysadf87w940e-=r0werpolwe$16$5*dfsdfsdf&&#$rrr$$)7a9563OO93f7099f6f0f4caa6cf63b88e8d3e7"
 
 ALGORITHM = "HS256"
@@ -41,15 +47,6 @@ def verify_token(token : str = Depends(oauth2_scheme) ):
 def time_difference(start_date):
     delta = datetime.now()-start_date
     return delta.total_seconds()
-    print('d')
-
-
-import random
-import string
-
-uppercase_and_digits = string.ascii_uppercase + string.digits
-
-lowercase_and_digits = string.ascii_lowercase + string.digits
 
 def gen_alphanumeric_code(length):
     code = ''.join((random.choice(uppercase_and_digits) for i in range(length)))
