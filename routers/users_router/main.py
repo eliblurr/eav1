@@ -52,8 +52,8 @@ async def update_password(id: int, payload: schemas.ResetPassword, db: Session =
     return await crud.reset_password(id,payload,db)
 
 # request password reset
-@router.post("/{id}/request")
-async def request_password_reset(id: int, db: Session = Depends(get_db)):
+@router.post("/request")
+async def request_password_reset():
     # user = await crud.get_user_by_id(id, db)
     # if user is None:
     #     raise HTTPException(status_code=404)
