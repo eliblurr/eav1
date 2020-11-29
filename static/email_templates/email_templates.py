@@ -198,9 +198,6 @@ html2 = """
 	</tbody>
 </table>
 
-
-
-
 <p style="font-family: Avenir, Helvetica, sans-serif; box-sizing: border-box; color: #2F3133; font-size: 16px; line-height: 1.5em; margin-top: 0; text-align: left; font-weight:bold">
     Regards,<br>
 </p>

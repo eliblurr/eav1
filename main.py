@@ -26,6 +26,11 @@ api = FastAPI(docs_url="/api/docs")
 
 origins = ["*"]
 
+import config
+
+settings = config.Settings()
+
+
 api.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

@@ -1,41 +1,29 @@
 from fastapi import FastAPI, BackgroundTasks, UploadFile, File, Form
 from fastapi_mail import FastMail, MessageSchema,ConnectionConfig
 from fastapi_mail.email_utils import DefaultChecker
+from static.email_templates import email_templates
 from starlette.responses import JSONResponse
 from pydantic import EmailStr, BaseModel
 from starlette.requests import Request
 from typing import List, Dict, Any
 from pydantic import EmailStr
-from static.email_templates import email_templates
+from main import settings
 
 class EmailSchema(BaseModel):
     email: List[EmailStr]
     body: Dict[str, Any]
 
-
 conf = ConnectionConfig(
-    MAIL_USERNAME = "a9f521690f65a4",
-    MAIL_PASSWORD = "11480b2eec8121",
-    MAIL_FROM = "elisegb-49cabc@inbox.mailtrap.io",
-    MAIL_PORT = 2525,
-    MAIL_SERVER = "smtp.mailtrap.io",
-    MAIL_TLS = False,
-    MAIL_SSL = False
+    MAIL_USERNAME = settings.MAIL_USERNAME,
+    MAIL_PASSWORD = settings.MAIL_PASSWORD,
+    MAIL_FROM = settings.MAIL_FROM,
+    MAIL_PORT = settings.MAIL_PORT,
+    MAIL_SERVER = settings.MAIL_SERVER,
+    MAIL_TLS = settings.MAIL_TLS,
+    MAIL_SSL = settings.MAIL_SSL
 )
 
-app = FastAPI()
-
-
-html = """
-<p>Hi this test mail, thanks for using Fastapi-mail</p> 
-"""
-
-template = """
-<p>Hi this test mail using BackgroundTasks, thanks for using Fastapi-mail</p> 
-"""
-
 # /email
-@app.post("/email")
 async def simple_send(email: EmailSchema) -> JSONResponse:
 
     message = MessageSchema(

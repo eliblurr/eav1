@@ -8,7 +8,7 @@ from datetime import timedelta
 import sys
 import traceback
 
-from main import get_db, oauth2_scheme
+from main import get_db, oauth2_scheme, settings
 import utils
 
 from services.email import simple_send, send_in_background
@@ -54,6 +54,13 @@ async def update_password(id: int, payload: schemas.ResetPassword, db: Session =
 # request password reset
 @router.post("/request")
 async def request_password_reset(background_tasks: BackgroundTasks):
+    # import config
+    print(type(settings.SECRET_KEY))
+    print(type(settings.MAIL_USERNAME))
+    print(type(settings.MAIL_PASSWORD))
+    print(type(settings.MAIL_SERVER))
+    print(type(settings.MAIL_TLS))
+    print(type(settings.MAIL_FROM))
     # user = await crud.get_user_by_id(id, db)
     # if user is None:
     #     raise HTTPException(status_code=404)

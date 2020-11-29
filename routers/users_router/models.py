@@ -1,19 +1,14 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Numeric, Date
 from sqlalchemy.orm import relationship, backref
 from passlib.hash import pbkdf2_sha256 as sha256
-import datetime
-
-from database import Base, SessionLocal
-
-from . import models
-
-import secrets
-
 from ..promo_router.models import PromoVouchers
-from ..boards_router.models import Boards
 from ..favorites_router.models import Favorites
-
 from ..product_router.models import Products
+from ..boards_router.models import Boards
+from database import Base, SessionLocal
+from . import models
+import datetime
+import secrets
 
 class User(Base):
     __tablename__ = "users"
@@ -22,6 +17,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String, nullable=True)
     auth_type_id = Column(Integer, ForeignKey("auth_type.id"), nullable=True )
+    status = Column(Boolean)
     
     user_info = relationship('UserInfo', backref="user", uselist=False, cascade="all, delete")
     promo_vouchers = relationship('PromoVouchers', backref="user", uselist=True, cascade="all, delete", lazy='dynamic')
