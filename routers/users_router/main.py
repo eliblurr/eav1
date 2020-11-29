@@ -54,25 +54,7 @@ async def update_password(id: int, payload: schemas.ResetPassword, db: Session =
 # request password reset
 @router.post("/request")
 async def request_password_reset(background_tasks: BackgroundTasks):
-    # import config
-    print(type(settings.SECRET_KEY))
-    print(type(settings.MAIL_USERNAME))
-    print(type(settings.MAIL_PASSWORD))
-    print(type(settings.MAIL_SERVER))
-    print(type(settings.MAIL_TLS))
-    print(type(settings.MAIL_FROM))
-    # user = await crud.get_user_by_id(id, db)
-    # if user is None:
-    #     raise HTTPException(status_code=404)
-    # try:
     await send_in_background(background_tasks)
-    # await simple_send({'email':['elvissegbawu@gmail.com']})
-    # raise HTTPException(status_code=200)
-    # except:
-    #     print(traceback.format_exc())
-    #     raise HTTPException(status_code=500)
-
-    # await simple_send(email: EmailSchema,subject: str, body: List[str])
 
     
 
