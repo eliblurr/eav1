@@ -1,19 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status, BackgroundTasks
-from sqlalchemy.orm import Session
-from . import crud, schemas,models
-from typing import List, Optional
-from pydantic import UUID4, EmailStr
-import jwt
-from datetime import timedelta
-import sys
-import traceback
-
-from main import get_db, oauth2_scheme, settings
-import utils
-
 from services.email import simple_send, send_in_background
-
-access_token_expires = timedelta(minutes=30)
+from main import get_db, oauth2_scheme, settings
+from pydantic import UUID4, EmailStr
+from . import crud, schemas,models
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from datetime import timedelta
+import traceback
+import utils
+import jwt
+import sys
 
 router = APIRouter()
 
@@ -47,27 +43,14 @@ async def read_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 
 async def update_user(id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
     return await crud.update_user(id,payload,db)
 
+# update user password
 @router.patch("/{id}/password", response_model=schemas.User)
 async def update_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
     return await crud.reset_password(id,payload,db)
 
-# request password reset
-@router.post("/request")
-async def request_password_reset(background_tasks: BackgroundTasks):
-    await send_in_background(background_tasks)
-
-    
-
-
-
-
-#get current user
-@router.get("/current_user", response_model=schemas.User)
-async def get_current_user(db: Session = Depends(get_db), payload : dict = Depends(utils.verify_token) ):
-    try:
-        if payload:
-            return payload
-        raise HTTPException(status_code=404, detail="user not found")
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        raise
+# verify user password
+@router.post("/verify/password")
+async def verify_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
+    if not await crud.verify_password(id, payload, db):
+        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
+    return Response(status_code=status.HTTP_202_ACCEPTED)

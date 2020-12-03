@@ -17,7 +17,6 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String, nullable=True)
     auth_type_id = Column(Integer, ForeignKey("auth_type.id"), nullable=True )
-    status = Column(Boolean)
     
     user_info = relationship('UserInfo', backref="user", uselist=False, cascade="all, delete")
     promo_vouchers = relationship('PromoVouchers', backref="user", uselist=True, cascade="all, delete", lazy='dynamic')
@@ -47,6 +46,7 @@ class UserInfo(Base):
     phone = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
     is_verified = Column(Boolean,nullable=False)
+    status = Column(Boolean)
 
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
@@ -69,19 +69,4 @@ class ResetPasswordToken(Base):
     @staticmethod
     def verify_token(token, hash):
         return sha256.verify(token, hash)
-# authentication Type
-class AuthType(Base):
-    __tablename__ = "auth_type"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    title = Column(String, unique=True, index=True)
-    users = relationship('User', backref="auth_type")
-
-@event.listens_for(AuthType.__table__, 'after_create')
-def insert_initial_values(*args, **kwargs):
-    db = SessionLocal()
-    db.add_all([
-        AuthType(title='local'),
-        AuthType(title='non_local')
-    ])
-    db.commit()
+        

@@ -1,6 +1,5 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-
 import datetime
 
 class UserBase(BaseModel):
@@ -15,6 +14,7 @@ class UserCreate(UserBase):
     image_url: Optional[str]
     is_verified: bool
     auth_type_id: int
+    status: Optional[bool] = True
 
 class UserUpdate(BaseModel):
     first_name: Optional[str]
@@ -23,14 +23,10 @@ class UserUpdate(BaseModel):
     image_url: Optional[str]
     is_verified: Optional[bool]
     phone: Optional[str]
+    status: Optional[bool]
 
 class ResetPassword(BaseModel):
-    password: Optional[str]
-
-    class Config:
-        orm_mode = True
-
-
+    password: str
 
 class UserInfo(BaseModel):
     id: int
@@ -39,7 +35,8 @@ class UserInfo(BaseModel):
     last_name: Optional[str]
     phone: Optional[str]
     image_url: Optional[str]
-    is_verified: bool
+    is_verified: Optional[bool] = True
+    status: Optional[bool] = True
 
     date_created: datetime.datetime
     date_modified: datetime.datetime
@@ -48,37 +45,8 @@ class UserInfo(BaseModel):
         orm_mode = True
 
 class User(UserBase):
+    id: int
     user_info : UserInfo
     
     class Config:
         orm_mode = True
-
-
-# class Token(BaseModel):
-#     access_token: str
-#     token_type: str
-
-#     class Config:
-#         orm_mode = True
-
-# # # Properties to return to client
-# class RevokedToken(BaseModel):
-#     jti: str 
-#     # pass
-
-
-# class UserSummary(BaseModel):
-#     first_name: Optional[str]
-#     middle_name: Optional[str]
-#     last_name: Optional[str]
-#     image_url: Optional[str]
-#     is_verified: Optional[bool]
-
-#     class Config:
-#         orm_mode = True
-
-# class ResetPassword(BaseModel):
-#     password: str
-
-#     class Config:
-#         orm_mode = True

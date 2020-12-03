@@ -117,7 +117,7 @@ from routers.users_router import main as users
 
 
 
-# api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
+api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 api.include_router(users.router,prefix="/api/users",tags=["user"])
 
 # api.include_router(product.router,prefix="/api/products",tags=["product"])

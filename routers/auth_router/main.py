@@ -1,79 +1,47 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from main import get_db, oauth2_scheme
+from pydantic import UUID4, EmailStr
 from sqlalchemy.orm import Session
 from . import crud, schemas,models
 from typing import List, Optional
-from pydantic import UUID4, EmailStr
-import jwt
-from datetime import timedelta
-import sys
-
-from main import get_db, oauth2_scheme
 import utils
-
-access_token_expires = timedelta(minutes=30)
+import jwt
+import sys
 
 router = APIRouter()
 
-from ..users_router.main import get_current_user
+@router.post("/", response_model=schemas.AuthResponse)
+async def authenticate(payload: schemas.Auth, db: Session = Depends(get_db)):
+    return await crud.authenticate(payload, db)
 
-#authenticate/login
-@router.post("/", response_model=schemas.Token, description="")
-async def authenticate(payload: schemas.UserBase, db: Session = Depends(get_db)):
-    print(payload.dict())
-#     user = await crud.get_user_by_email(payload.email, db)
-#     if not user:
-#         raise HTTPException( status_code=404, detail="user not found")
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(payload: schemas.Token, db: Session = Depends(get_db)):
+    return await crud.revoke_token(payload, db)
 
-#     if user.auth_type.title == 'local':
-#         if await crud.verify_password(db, payload.password, user.password):
-#             access_token = utils.create_access_token(data = payload.dict(), expires_delta=access_token_expires)
-#             return {'access_token': access_token, "token_type": "Bearer"}
-#         else:
-#             raise HTTPException( status_code=404, detail="failed to authenticate, check password")
-            
-#     access_token = utils.create_access_token(data = payload.dict(), expires_delta=access_token_expires)
-#     return {'access_token': access_token, "token_type": "Bearer"}
+@router.post("/refresh", response_model=schemas.Token)
+async def refresh_token(payload: schemas.Token, db: Session = Depends(get_db)):
+    return await crud.refresh_token(payload, db)
 
-# reset password
-@router.post("/get_reset_token", description="generate password reset token")
-async def gen_reset_token(email: str, db: Session = Depends(get_db)):
-    print('sd')
-#     user = await crud.get_user_by_email(email,db)
-#     if not user:
-#         raise HTTPException(status_code=404, detail="{} was not found".format(email))
-#     return await crud.add_reset_token(db,user)
+@router.get("/")
+async def get_current_user(token : str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    res = await crud.is_token_blacklisted(token, db)
 
-# 
-@router.post("/verify_reset_token/{id}", description="verify reset token")
-async def verify_token(token: str, id: int, db: Session = Depends(get_db)):
-        print('sd')
-#     user = await crud.get_user_by_id(id,db)
-#     if not user:
-#         raise HTTPException(status_code=404, detail="user with id: {} was not found".format(id))
-#     return await crud.verify_reset_token(db,token,user)
+    if res:
+        raise HTTPException(status_code=401, detail="access unauthorised")
 
-# 
-@router.get("/refresh", description="refresh token")
-async def refresh_token(user: schemas.User = Depends(get_current_user), token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    print('dd')
-#     await crud.create_revoked_token(db,token)
-#     # blacklist old token the create new one
-#     print(user)
-#     access_token = utils.create_access_token(data = user, expires_delta=access_token_expires)
-#     return {'access_token': access_token, "token_type": "Bearer"}
+    try:
+        token_data = utils.decode_access_token(data=token)
+        if token_data:
+            del token_data['exp']
+            return token_data
+        
+    except jwt.exceptions.ExpiredSignatureError as e:
+        raise HTTPException( status_code=401, detail="access token expired", headers={"WWW-Authenticate": "Bearer"})
 
-#     # access_token= utils.create_access_token(
-#     #     data={"sub": user.username}, expires_delta=timedelta(minutes=15)
-#     # )
-#     # access_token = utils.create_access_token(data = payload.dict(), expires_delta=access_token_expires)
-#     # return {'access_token': access_token, "token_type": "Bearer"}
-#     # data = payload.dict(), expires_delta=access_token_expires
-#     # return {"access_token": access_token, "token_type": "bearer"}
+    except jwt.exceptions.DecodeError as e:
+        raise HTTPException( status_code=500, detail="decode error not enough arguments", headers={"WWW-Authenticate": "Bearer"})
 
-@router.get('/revoke', description="revoke refresh token")
-def revoke_token():
-    print('sd')
-# /authenticate
-# /get_user
-# /refresh
-# /revoke
+@router.post("/request")
+async def request_password_reset(payload: schemas.Email, db: Session = Depends(get_db)):
+    return True
+    # await send_in_background(background_tasks)

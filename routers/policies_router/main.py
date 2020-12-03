@@ -25,7 +25,7 @@ async def update_policy(id:int, payload: schemas.UpdatePolicies, db: Session = D
 @router.delete("/", description="delete policies")
 async def delete_policy(ids: List[int], db: Session = Depends(get_db)):
     if not await crud.delete_policy(ids, db):  
-        raise HTTPException( status_code=404)
+        raise HTTPException( status_code=400)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.get("/", description="read policies", response_model = List[schemas.Policies])
