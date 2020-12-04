@@ -54,7 +54,7 @@ from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 import pytz
 
 jobstores = {
-    'default': SQLAlchemyJobStore(url='sqlite:///./sql_app.db')
+    'default': SQLAlchemyJobStore(url=os.environ.get('DATABASE_URL') or 'sqlite:///./sql_app.db')
 }
 executors = {
     'default': ThreadPoolExecutor(20),
@@ -67,26 +67,10 @@ job_defaults = {
 
 scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=pytz.utc, misfire_grace_time=1)
 
+# def scheduled_job(text):
+#     print('Welcome to Neutrons link {}'.format(text))
 
-# scheduler.add_job(myfunc, 'interval', minutes=2, id='my_job_id')
-# scheduler.remove_job('my_job_id')
-# scheduler.shutdown()
-# scheduler.shutdown(wait=False)
-# scheduler.resume()
-# scheduler.start(paused=True)
-# scheduler.reschedule_job('my_job_id', trigger='cron', minute='*/5')
-# triggers = date, cron, interval
-# scheduler.get_jobs()
-# scheduler.print_jobs()
-# scheduler.add_job(myfunc, 'interval', minutes=2, id='my_job_id',replace_existing=True)
-# current_app.scheduler.add_job(
-#         test_job, 'cron', hour=hour, minute=minute,
-#         args=[name], id=job_id)
-def scheduled_job():
-    print('Welcome to Neutrons link')
-
-scheduler.add_job(scheduled_job, trigger='interval', seconds=5, id='scheduled_job',replace_existing=True)
-
+# scheduler.add_job(scheduled_job, trigger='interval', kwargs={'text':'go fund yourself'}, seconds=5, id='scheduled_job',replace_existing=True)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -138,11 +122,6 @@ api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
 
 # api.include_router(media.router,prefix="/api/media",tags=["media data"])
-
-
-
-
-
 
 @api.get("/")
 def welcome():
