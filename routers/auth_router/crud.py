@@ -1,15 +1,17 @@
 from ..users_router.crud import get_user_by_email, get_user_by_id
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, BackgroundTasks
+from services.email import send_in_background
 from ..users_router.models import User
 from sqlalchemy.orm import Session
+from main import get_db, scheduler
 from datetime import timedelta
 from . import models, schemas
 from sqlalchemy import or_
-from main import get_db
 import sqlalchemy
 import utils
 import sys
 import os
+
 
 access_token_duration = timedelta(minutes= os.environ.get('ACCESS_TOKEN_DURATION_IN_MINUTES') or 30)
 refresh_token_duration = timedelta(days= os.environ.get('REFRESH_TOKEN_DURATION_IN_MINUTES') or 87000)
@@ -73,24 +75,46 @@ async def is_token_blacklisted(token: str, db: Session):
         return False
     return True
 
-async def request_password_reset(payload: schemas.Email, db: Session):
+async def request_password_reset(payload: schemas.Email, db: Session, background_tasks: BackgroundTasks):
     user = await get_user_by_email(payload.email, db)
 
-    new_code = models.ResetPasswordCodes(user_id = user.id, code = models.ResetPasswordCodes.generate_code())
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
 
-    code = db.query(models.ResetPasswordCodes).filter(or_(
-        models.ResetPasswordCodes.user_id == user.id,
-        models.ResetPasswordCodes.code == new_code.code
-    )).first()
+    while True:
+        new_code = models.ResetPasswordCodes(user_id = user.id, code = models.ResetPasswordCodes.generate_code())
 
-    if code is None:
-        try:
-            db.add(new_code)
+        code = db.query(models.ResetPasswordCodes).filter(or_(
+            models.ResetPasswordCodes.user_id == user.id,
+            models.ResetPasswordCodes.code == new_code.code
+        )).first()
+
+        if code:
+            try:
+                db.delete(code)
+                db.commit()
+                break
+            except:
+                raise HTTPException(status_code=500)
+        else:
+            break
+    
+    try:
+        db.add(new_code)
+        db.commit()
+        db.refresh(new_code)
+        await send_in_background(background_tasks, ['{}'.format(payload.email)], new_code.code)
+        return new_code
+    except:
+        db.rollback()
+        db.close()
+
+async def delete_password_reset_code(id: int, db: Session):
+    try:
+        code = db.query(models.ResetPasswordCodes).filter(models.ResetPasswordCodes.user_id == id).first()
+        if code:
+            db.delete(code)
             db.commit()
-            db.refresh(new_code) 
-            return new_code
-        except:
-            db.rollback()
-            db.close()
-
-    return False
+        return True
+    except:
+        raise HTTPException(status_code=500)

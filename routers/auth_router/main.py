@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from main import get_db, oauth2_scheme
 from pydantic import UUID4, EmailStr
 from sqlalchemy.orm import Session
@@ -42,6 +42,8 @@ async def get_current_user(token : str = Depends(oauth2_scheme), db: Session = D
         raise HTTPException( status_code=500, detail="decode error not enough arguments", headers={"WWW-Authenticate": "Bearer"})
 
 @router.post("/request")
-async def request_password_reset(payload: schemas.Email, db: Session = Depends(get_db)):
-    return True
-    # await send_in_background(background_tasks)
+async def request_password_reset(payload: schemas.Email, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    code = await crud.request_password_reset(payload, db, background_tasks)
+    if code is None:
+        raise HTTPException(status_code=417, detail="failed to generate reset code for user")
+    return code

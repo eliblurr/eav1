@@ -220,3 +220,5 @@ html2 = """
                     <tr>
     <td style="font-family: Avenir, Helvetica, sans-serif; box-sizing: border-box;">
 """
+
+html_simple = """{}"""

@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException
 from datetime import datetime, timedelta
-from main import oauth2_scheme
+# from main import oauth2_scheme
 from typing import Optional
 import os, string, random
 import jwt

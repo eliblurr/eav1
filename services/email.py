@@ -24,12 +24,12 @@ conf = ConnectionConfig(
 )
 
 # /email
-async def simple_send(email: EmailSchema) -> JSONResponse:
+async def simple_send(email: List[EmailStr], data) -> JSONResponse:
 
     message = MessageSchema(
         subject="Fastapi-Mail module",
-        recipients=['elvissegbawu@gmail.com'],  # List of recipients, as many as you can pass 
-        body=email_templates.html,
+        recipients=email,  # List of recipients, as many as you can pass 
+        body=email_templates.html_simple.format(data),
         subtype="html"
         )
 
@@ -38,12 +38,12 @@ async def simple_send(email: EmailSchema) -> JSONResponse:
     return JSONResponse(status_code=200, content={"message": "email has been sent"})
 
 # /emailbackground
-async def send_in_background(background_tasks: BackgroundTasks ) -> JSONResponse:
+async def send_in_background(background_tasks: BackgroundTasks, email: List[EmailStr], data ) -> JSONResponse:
 
     message = MessageSchema(
         subject="Fastapi mail module",
-        recipients=['elvissegbawu@gmail.com','clay@mail.com', 'james@james.com'],
-        body=email_templates.html,
+        recipients=email,
+        body=email_templates.html_simple.format(data),
         subtype="html"
         )
 
@@ -68,4 +68,3 @@ async def send_file(background_tasks: BackgroundTasks,file: UploadFile = File(..
     background_tasks.add_task(fm.send_message,message)
 
     return JSONResponse(status_code=200, content={"message": "email has been sent"})
-
