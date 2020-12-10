@@ -1,7 +1,7 @@
+from ..auth_router.models import AuthType, ResetPasswordCodes
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from passlib.hash import pbkdf2_sha256 as sha256
 from fastapi import Depends, HTTPException
-from ..auth_router.models import AuthType
 from sqlalchemy.orm import Session
 from . import models, schemas
 from main import get_db
@@ -100,6 +100,9 @@ async def reset_password(id, payload: schemas.ResetPassword, db: Session):
     if not await get_user_by_id(id,db):
         raise HTTPException(status_code=404, detail="user with id: {} was not found".format(id))
     
+    if not verify_password_reset_code(id, payload.code, db):
+        raise HTTPException(status_code=417, detail="could not verify reset code")
+    
     try:
         res = db.query(models.User).filter(models.User.id == id).update({'password':models.User.generate_hash(payload.password)})
         db.commit()
@@ -109,3 +112,9 @@ async def reset_password(id, payload: schemas.ResetPassword, db: Session):
         db.rollback()
         # log error here
         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+
+async def verify_password_reset_code(id, code, db: Session):
+    code = db.query(ResetPasswordCodes).filter(or_(ResetPasswordCodes.user_id == user.id, ResetPasswordCodes.code == new_code.code)).first()
+    if code:
+        return True
+    return False

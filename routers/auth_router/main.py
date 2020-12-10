@@ -30,7 +30,7 @@ async def get_current_user(token : str = Depends(oauth2_scheme), db: Session = D
         raise HTTPException(status_code=401, detail="access unauthorised")
 
     try:
-        token_data = utils.decode_access_token(data=token)
+        token_data = utils.decode_token(data=token)
         if token_data:
             del token_data['exp']
             return token_data

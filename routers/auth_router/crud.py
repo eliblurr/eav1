@@ -28,8 +28,8 @@ async def authenticate(payload: schemas.Auth, db: Session):
         refresh_token = utils.create_refresh_token(data = {'email':payload.email,'id':user.id}, expires_delta=refresh_token_duration)
 
         return {
-            "access_token": access_token[0].decode("utf-8"),
-            "refresh_token": refresh_token[0].decode("utf-8"),
+            "access_token": access_token.decode("utf-8"),
+            "refresh_token": refresh_token.decode("utf-8"),
             'user': user
         }
 
@@ -56,7 +56,7 @@ async def revoke_token(payload: schemas.Token, db: Session):
         raise HTTPException(status_code=401, detail="authentication failed")
 
 async def refresh_token(payload: schemas.Token, db: Session):
-    data = utils.decode_access_token(data=payload.refresh_token)
+    data = utils.decode_token(data=payload.refresh_token)
 
     if not await revoke_token(payload, db):
         raise HTTPException(status_code=417,detail="failed to revoke access token")
@@ -65,8 +65,8 @@ async def refresh_token(payload: schemas.Token, db: Session):
     refresh_token = utils.create_refresh_token(data = {'email':data.get('email'),'id':data.get('id')}, expires_delta=refresh_token_duration)
 
     return {
-        'access_token': access_token[0].decode("utf-8"),
-        'refresh_token': refresh_token[0].decode("utf-8"),
+        'access_token': access_token.decode("utf-8"),
+        'refresh_token': refresh_token.decode("utf-8"),
     }
 
 async def is_token_blacklisted(token: str, db: Session):

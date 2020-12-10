@@ -27,6 +27,7 @@ class UserUpdate(BaseModel):
 
 class ResetPassword(BaseModel):
     password: str
+    code: Optional[str]
 
 class UserInfo(BaseModel):
     id: int
