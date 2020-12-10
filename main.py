@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+
 from fastapi.middleware.cors import CORSMiddleware
 from database import SessionLocal, engine
+
+from fastapi import FastAPI
 
 from routers.auth_router import models
 # from routers.category_router import models
@@ -134,4 +136,6 @@ async def shutdown_event():
 @api.on_event("startup")
 async def startup_event():
     print('server is active')
+    # from dotenv import load_dotenv
+    # load_dotenv()
     scheduler.start()

@@ -16,6 +16,7 @@ from database import SessionLocal
 
 access_token_duration = timedelta(minutes= os.environ.get('ACCESS_TOKEN_DURATION_IN_MINUTES') or 30)
 refresh_token_duration = timedelta(days= os.environ.get('REFRESH_TOKEN_DURATION_IN_MINUTES') or 87000)
+reset_password_session_duration = os.environ.get('RESET_PASSWORD_SESSION_DURATION_IN_MINUTES') or 1
 
 async def authenticate(payload: schemas.Auth, db: Session):
     user = await get_user_by_email(payload.email, db)
@@ -104,7 +105,7 @@ async def request_password_reset(payload: schemas.Email, db: Session, background
         db.add(new_code)
         db.commit()
         db.refresh(new_code)
-        scheduler.add_job(delete_password_reset_code, trigger='date', kwargs={'id': new_code.id}, id='ID{}'.format(new_code.id), replace_existing=True, run_date=datetime.utcnow()+timedelta(minutes=0.2))
+        scheduler.add_job(delete_password_reset_code, trigger='date', kwargs={'id': new_code.id}, id='ID{}'.format(new_code.id), replace_existing=True, run_date=datetime.utcnow()+timedelta(minutes=reset_password_session_duration))
         await send_in_background(background_tasks, ['{}'.format(payload.email)], new_code.code)
         return new_code
     except:

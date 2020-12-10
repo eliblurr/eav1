@@ -43,14 +43,12 @@ async def read_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 
 async def update_user(id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
     return await crud.update_user(id,payload,db)
 
-# update user password
-@router.patch("/{id}/password", response_model=schemas.User)
-async def update_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
-    return await crud.reset_password(id,payload,db)
-
 # verify user password
 @router.post("/verify/password")
 async def verify_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
-    if not await crud.verify_password(id, payload, db):
-        raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED)
-    return Response(status_code=status.HTTP_202_ACCEPTED)
+    return await crud.verify_password(id, payload, db)
+
+# update user password
+@router.patch("/{id}/password", status_code=status.HTTP_202_ACCEPTED)
+async def update_password(id: int, payload: schemas.ResetPassword, db: Session = Depends(get_db)):
+    return await crud.reset_password(id,payload,db)

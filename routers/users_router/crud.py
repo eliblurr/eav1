@@ -100,21 +100,18 @@ async def reset_password(id, payload: schemas.ResetPassword, db: Session):
     if not await get_user_by_id(id,db):
         raise HTTPException(status_code=404, detail="user with id: {} was not found".format(id))
     
-    if not verify_password_reset_code(id, payload.code, db):
+    if not await verify_code(id, payload.code, db):
         raise HTTPException(status_code=417, detail="could not verify reset code")
     
     try:
         res = db.query(models.User).filter(models.User.id == id).update({'password':models.User.generate_hash(payload.password)})
         db.commit()
-        return await get_user_by_id(id, db)
+        return True
     
     except:
         db.rollback()
         # log error here
         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
 
-async def verify_password_reset_code(id, code, db: Session):
-    code = db.query(ResetPasswordCodes).filter(or_(ResetPasswordCodes.user_id == user.id, ResetPasswordCodes.code == new_code.code)).first()
-    if code:
-        return True
-    return False
+async def verify_code(id, code, db: Session):
+    return db.query(ResetPasswordCodes).filter(sqlalchemy.and_(ResetPasswordCodes.user_id == id, ResetPasswordCodes.code == code)).first()
