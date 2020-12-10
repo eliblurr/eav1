@@ -14,6 +14,7 @@ class UserCreate(UserBase):
     image_url: Optional[str]
     is_verified: bool
     auth_type_id: int
+    user_type_id: int
     status: Optional[bool] = True
 
 class UserUpdate(BaseModel):

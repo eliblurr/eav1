@@ -15,10 +15,14 @@ async def create_user(payload: schemas.UserCreate , db: Session = Depends(get_db
     if not auth_type:
         raise HTTPException(status_code=404, detail="could not find auth_type that corresponds to the user you are trying to create" )
     
-    info = {k:v for (k,v) in payload.dict().items() if k != 'email' and k != 'password' and k != 'auth_type_id'}
+    user_type = db.query(models.UserType).filter(models.UserType.id == payload.user_type_id).first()
+    if not user_type:
+        raise HTTPException(status_code=404, detail="could not find user_type that corresponds to the user you are trying to create" )
+    
+    info = {k:v for (k,v) in payload.dict().items() if k != 'email' and k != 'password' and k != 'auth_type_id' and k != 'user_type_id'}
 
     try:  
-        new_user = models.User(email=payload.email, password=models.User.generate_hash(payload.password),auth_type=auth_type)
+        new_user = models.User(email=payload.email, password=models.User.generate_hash(payload.password), auth_type=auth_type, user_type=user_type)
         db.add(new_user)
 
         user_info = models.UserInfo(**info,user=new_user)

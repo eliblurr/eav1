@@ -17,6 +17,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password = Column(String, nullable=True)
     auth_type_id = Column(Integer, ForeignKey("auth_type.id"), nullable=True )
+    user_type_id = Column(Integer, ForeignKey("user_type.id"), nullable=True )
     
     user_info = relationship('UserInfo', backref="user", uselist=False, cascade="all, delete")
     promo_vouchers = relationship('PromoVouchers', backref="user", uselist=True, cascade="all, delete", lazy='dynamic')
@@ -69,4 +70,18 @@ class ResetPasswordToken(Base):
     @staticmethod
     def verify_token(token, hash):
         return sha256.verify(token, hash)
+
+class UserType(Base):
+    __tablename__ = "user_type"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    title = Column(String, unique=True, index=True)
+
+    users = relationship('User', backref="user_type")
+
+@event.listens_for(UserType.__table__, 'after_create')
+def insert_initial_values(*args, **kwargs):
+    db = SessionLocal()
+    db.add_all([ UserType(title='vendor'), UserType(title='consumer'), UserType(title='Administrator') ]), UserType(title='System Manager')
+    db.commit()
         
