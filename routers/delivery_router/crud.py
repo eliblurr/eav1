@@ -41,6 +41,8 @@ async def delete_delivery(id: int, db: Session):
         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
 
 async def update_delivery(id: int, payload: schemas.DeliveryUpdate, db: Session):
+    if not await read_delivery_by_id(id, db):
+        raise HTTPException(status_code=404, detail="delivery with id: {} was not found".format(id))
     try:
         res = db.query(models.Delivery).filter(models.Delivery.id == id).update(payload.dict(exclude_unset=True).items())
         db.commit()
