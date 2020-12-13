@@ -1,6 +1,8 @@
 venv/
+product_images/
 *.pyc
 
 *.db
+notes.txt
 
 __pycache__/
