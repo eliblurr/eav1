@@ -8,6 +8,9 @@ class Announcement(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     description = Column(String, nullable=True)
-    is_active = Column(Boolean, default=True)
+    status = Column(Boolean, default=True)
+
+    created_date = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_date = Column(DateTime, default=datetime.datetime.utcnow)
 
     # priority
