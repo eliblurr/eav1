@@ -10,7 +10,7 @@ async def create_timeline(payload: schemas.CreateTimeline, db: Session):
         db.add(new_timeline)
         db.commit()
         db.refresh(new_timeline) 
-        return new_user
+        return new_timeline
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail="user with email {} already exists".format(payload.email))
@@ -49,8 +49,7 @@ async def update_timeline(id: int, payload: schemas.UpdateTimeline, db: Session)
     try:
         timeline = db.query(models.Timeline).filter(models.Timeline.id == id).update(payload.dict(exclude_unset=True).items())
         db.commit()
-        db.refresh(timeline) 
-        return timeline
+        return await read_timeline_by_id(id, db)
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail = "unique constraint failed on index")
