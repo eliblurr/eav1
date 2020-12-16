@@ -60,6 +60,15 @@ async def delete_product(id, db: Session):
 #     db.commit()
 #     return res
 
+# async def get_prod_category()
+async def get_prod_category(id, db: Session):
+    item = db.query(models.Products).filter(models.Products.id == id).first()
+    # for item in item.category:
+    #     print(item)
+    # print(item.category.all())
+    # print(dir(item.category))
+    return item.category.all()
+
 
 
 

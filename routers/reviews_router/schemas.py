@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 import datetime
 
-from ..auth_router.schemas import UserSummary
+from ..users_router.schemas import User
 
 class ReviewsBase(BaseModel):
     title: str
@@ -27,7 +27,7 @@ class Reviews(ReviewsBase):
     date_modified: datetime.datetime
     date_created: datetime.datetime
 
-    author: UserSummary
+    author: User
 
     class Config:
         arbitrary_types_allowed = True

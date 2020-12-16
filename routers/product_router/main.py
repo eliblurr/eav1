@@ -20,7 +20,7 @@ router = APIRouter()
 async def create_product( payload: schemas.ProductBase, db: Session = Depends(get_db)):
     return await crud.create_product(payload, db)
     
-@router.get("/", response_model = List[schemas.Product])
+@router.get("/")
 # , response_model = List[schemas.Product]
 async def read_products(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
     return await crud.read_products(skip,limit,search,value,db)
@@ -69,3 +69,25 @@ async def get_image_url(db: Session = Depends(get_db)):
     # with open('./product_images/{}/new_image.png'.format(product_title), 'wb') as new_image:
     #     new_image.write(image)
     return True
+
+from pydantic import BaseModel
+import datetime
+
+# from ..category_router.schemas import CategoryBase
+class Category(BaseModel):
+    id: int
+    title: str
+    metatitle: str
+    description: str
+    # images = relationship('CategoryImages', backref="category", uselist=True, cascade="all, delete")
+
+
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+#     date_created: datetime.datetime
+#     date_modified: datetime.datetime
+#     images: List
+
+@router.get("/test/{id}")
+async def test(id:int, db: Session = Depends(get_db)):
+    return await crud.get_prod_category(id, db)
