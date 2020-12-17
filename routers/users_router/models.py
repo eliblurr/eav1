@@ -4,6 +4,7 @@ from passlib.hash import pbkdf2_sha256 as sha256
 from ..promo_router.models import PromoVouchers
 from ..favorites_router.models import Favorites
 from ..product_router.models import Products
+from ..payment_router.models import Payment
 from ..boards_router.models import Boards
 from database import Base, SessionLocal
 from . import models
@@ -25,6 +26,7 @@ class User(Base):
     favorites = relationship('Products', secondary='favorites', backref=backref('user', lazy='dynamic'), lazy='dynamic')
     reset_password_token = relationship('ResetPasswordToken', backref="user", uselist=False, cascade="all, delete")
     products = relationship('Products', backref="owner", uselist=True, cascade="all, delete", lazy='dynamic')
+    # payments = relationship('Payment', backref="customer", uselist=True, cascade="all, delete", lazy='dynamic')
 
 
     @staticmethod

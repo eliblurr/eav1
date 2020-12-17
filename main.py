@@ -65,6 +65,7 @@ async def startup_event():
 
 # from routers.subscriptions_router import main as subscriptions
 # from routers.announcement_router import main as announcement
+from routers.payment_type_router import main as payment_type
 # from routers.priorities_router import main as priorities
 # from routers.favorites_router import main as favorites
 # from routers.about_us_router import main as about_us
@@ -72,10 +73,10 @@ async def startup_event():
 # from routers.location_router import main as location
 # from routers.policies_router import main as policies
 # from routers.category_router import main as category
-from routers.timeline_router import main as timeline
+# from routers.timeline_router import main as timeline
 # from routers.reviews_router import main as reviews
 # from routers.product_router import main as product
-# from routers.payment_router import main an payment
+from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
 # from routers.events_router import main as events
 # from routers.promo_router import main as promo
@@ -88,18 +89,20 @@ from routers.timeline_router import main as timeline
 
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
 # api.include_router(announcement.router,prefix="/api/announcements",tags=["announcements"])
+api.include_router(payment_type.router,prefix="/api/payment_type",tags=["payment_type"])
 # api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
 # api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 # api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 # api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(category.router,prefix="/api/categories",tags=["category"])
-api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
+# api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 # api.include_router(location.router,prefix="/api/locations",tags=["location"])
 # api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
 # api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 # api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 # api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
 # api.include_router(product.router,prefix="/api/products",tags=["product"])
+api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 # api.include_router(order.router,prefix="/api/orders",tags=["user order"])
 # api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(media.router,prefix="/api/media",tags=["media data"])

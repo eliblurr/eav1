@@ -1,9 +1,6 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Numeric, Date, Float
-from sqlalchemy.orm import relationship
 from database import Base
 import datetime
-
-from ..order_router.models import Orders
 
 class Timeline(Base):
     __tablename__ = "timeline"
