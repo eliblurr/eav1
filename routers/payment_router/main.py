@@ -18,6 +18,10 @@ async def read_payment(skip: int=0, limit: int=100, search:str = None, value:str
 async def read_payment_by_id(id: int, db: Session = Depends(get_db)):
     return await crud.read_payment_by_id(id, db)
 
+@router.get("/amount/filter", response_model=List[schemas.Payment])
+async def filter_payment(skip: int=0, limit: int=100, lower_boundary:float = 0, upper_boundary:float = 0, db: Session = Depends(get_db)):
+    return await crud.filter_payment(skip, limit, lower_boundary, upper_boundary, db)
+
 @router.patch("/{id}", response_model=schemas.Payment)
 async def update_payment(id: int, payload: schemas.UpdatePayment, db: Session = Depends(get_db)):
     return await crud.update_payment(id, payload, db)

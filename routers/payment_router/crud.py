@@ -3,6 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
+from sqlalchemy import and_
 import sys
 
 async def create_payment(payload: schemas.CreatePayment, db: Session):
@@ -37,6 +38,21 @@ async def read_payment(skip: int, limit: int, search: str, value:str, db: Sessio
 
 async def read_payment_by_id(id: int, db: Session):
     return db.query(models.Payment).filter(models.Payment.id == id).first()
+
+async def filter_payment(skip: int, limit: int, lower_boundary: float, upper_boundary:float, db: Session):
+    try:
+        base = db.query(models.Payment)
+        if lower_boundary and upper_boundary:
+            try: 
+                base = base.filter(and_(
+                    models.Payment.amount <= upper_boundary,
+                    models.Payment.amount >= lower_boundary
+                ))
+            except KeyError:
+                return base.offset(skip).limit(limit).all()
+        return base.offset(skip).limit(limit).all()
+    except:
+        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
 
 async def delete_payment(id: int, db: Session):
     try:

@@ -23,7 +23,7 @@ class Payment(PaymentBase):
     status: bool
     created_date: datetime.datetime
     updated_date: datetime.datetime
-    payment_type: PaymentType
+    payment_type: Optional[PaymentType]
 
     class Config:
         orm_mode = True
