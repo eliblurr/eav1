@@ -13,7 +13,7 @@ class ResetPasswordCodes(Base):
     status = Column(Boolean)
 
     created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_date = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     @staticmethod
     def generate_code():

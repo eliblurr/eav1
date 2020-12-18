@@ -14,13 +14,29 @@ access_token_expires = timedelta(minutes=30)
 
 router = APIRouter()
 
-@router.post('/rental')
-async def rent_product(payload: List[schemas.Rental], db: Session = Depends(get_db)):
+@router.post("/", response_model=schemas.Order)
+async def create_order(payload: schemas.CreateOrder, db: Session = Depends(get_db)):
     return payload
 
-@router.post('/purchase')
-async def rent_product(payload: List[schemas.Purchase], db: Session = Depends(get_db)):
-    return payload
+@router.get("/", response_model=List[schemas.Order])
+async def get_order(skip: int=0, limit: int=100, search:str = None, value:str = None, db: Session = Depends(get_db)):
+    return
+
+@router.get("/{id}", response_model=schemas.Order)
+async def get_order_by_id(id: int, db: Session = Depends(get_db)):
+    return
+
+@router.patch("/{id}", response_model=schemas.Order)
+async def update_order(id: int, payload: schemas.UpdateOrder, db: Session = Depends(get_db)):
+    return
+
+@router.delete("/{id}")
+async def delete_order():
+    # if not await crud.delete_payment(id, db):
+    #     raise HTTPException( status_code=500)
+    # return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return
+
 
 # make order
 # - validate user[get usertype from token]
