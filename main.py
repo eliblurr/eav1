@@ -9,6 +9,7 @@ import config
 import pytz
 import os
 
+from routers.purchase_type_router import models
 from routers.subscriptions_router import models
 from routers.announcement_router import models
 from routers.priorities_router import models
@@ -63,6 +64,7 @@ async def shutdown_event():
 async def startup_event():
     scheduler.start()
 
+from routers.purchase_type_router import main as purchase_type
 # from routers.subscriptions_router import main as subscriptions
 # from routers.announcement_router import main as announcement
 # from routers.payment_type_router import main as payment_type
@@ -76,17 +78,18 @@ async def startup_event():
 # from routers.timeline_router import main as timeline
 # from routers.reviews_router import main as reviews
 # from routers.product_router import main as product
-from routers.payment_router import main as payment
+# from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
 # from routers.events_router import main as events
 # from routers.promo_router import main as promo
-from routers.order_router import main as order
+# from routers.order_router import main as order
 # from routers.users_router import main as users
 # from routers.auth_router import main as auth
 # from routers.faqs_router import main as faqs
 # from routers.t_c_router import main as t_c
 # from media import main as media
 
+api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
 # api.include_router(announcement.router,prefix="/api/announcements",tags=["announcements"])
 # api.include_router(payment_type.router,prefix="/api/payment_type",tags=["payment_type"])
@@ -102,12 +105,12 @@ from routers.order_router import main as order
 # api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 # api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
 # api.include_router(product.router,prefix="/api/products",tags=["product"])
-api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
+# api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 # api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(media.router,prefix="/api/media",tags=["media data"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
 # api.include_router(events.router,prefix="/api/events",tags=["events"])
-api.include_router(order.router,prefix="/api/orders",tags=["orders"])
+# api.include_router(order.router,prefix="/api/orders",tags=["orders"])
 # api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])

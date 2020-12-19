@@ -17,6 +17,7 @@ class UpdatePurchaseType(BaseModel):
     status: Optional[bool]
 
 class PurchaseType(PurchaseTypeBase):
+    id: int
     status: Optional[bool]
     created_date: datetime.datetime
     updated_date: datetime.datetime

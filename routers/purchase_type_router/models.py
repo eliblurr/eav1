@@ -1,12 +1,13 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Numeric, Date, Float
 from sqlalchemy.orm import relationship, backref
 from database import Base, SessionLocal
+import datetime
 
 class PurchaseType(Base):
     __tablename__ = "purchase_type"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    title = Column(String, nullable=False)
+    title = Column(String, nullable=False, unique=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
     status = Column(Boolean, default=True)
