@@ -100,7 +100,10 @@ class FileIO:
 
     async def delete(self, files: List = []):
         try:
-            return
+            for file in files:
+                file_url = "{directory}/{file}".format(directory=self.directory, file=file)
+            if await utils.delete_file(file_url):
+                return file_directory                
         except OSError:
             print("{}".format(sys.exc_info()))
         except:
