@@ -20,3 +20,4 @@ typing==3.7.4.3
 gunicorn==19.9.0
 httptools==0.1.1
 uvloop==0.14.0
+compress==0.0.3

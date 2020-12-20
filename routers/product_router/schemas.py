@@ -11,9 +11,10 @@ class ProductBase(BaseModel):
     quantity: int
     status: bool
     date_modified: datetime.datetime
-    purchase: bool
+    purchase_type_id: int
+    # purchase: bool
     date_created: datetime.datetime
-    rental: bool
+    # rental: bool
     quantity: int
      
 class ProductCreate(ProductBase):

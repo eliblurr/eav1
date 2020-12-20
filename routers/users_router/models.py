@@ -23,7 +23,7 @@ class User(Base):
     user_info = relationship('UserInfo', backref="user", uselist=False, cascade="all, delete")
     promo_vouchers = relationship('PromoVouchers', backref="user", uselist=True, cascade="all, delete", lazy='dynamic')
     boards = relationship('Boards', backref="user", uselist=True,lazy="dynamic", cascade="all, delete")
-    favorites = relationship('Products', secondary='favorites', backref=backref('user', lazy='dynamic'), lazy='dynamic')
+    favorites = relationship('Products', secondary='favorites', backref=backref('liked_by', lazy='dynamic'), lazy='dynamic')
     reset_password_token = relationship('ResetPasswordToken', backref="user", uselist=False, cascade="all, delete")
     products = relationship('Products', backref="owner", uselist=True, cascade="all, delete", lazy='dynamic')
     # payments = relationship('Payment', backref="customer", uselist=True, cascade="all, delete", lazy='dynamic')

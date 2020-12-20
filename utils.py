@@ -63,3 +63,6 @@ def delete_file(url):
         return True
     except:
         return False
+
+def compress_file():
+    return
