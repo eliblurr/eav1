@@ -43,5 +43,5 @@ class Products(Base):
 class ProductImages(Base):
     __tablename__ = "product_images"
 
-    category_id = Column(Integer, ForeignKey('products.id'),primary_key=True)
+    product_id = Column(Integer, ForeignKey('products.id'),primary_key=True)
     image_url = Column(String, nullable=False,primary_key=True)
