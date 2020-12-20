@@ -1,7 +1,9 @@
-from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 from sqlalchemy import and_
+from typing import List
+import utils
 import sys
 
 class CRUD:
@@ -75,4 +77,58 @@ class CRUD:
             raise HTTPException(status_code=409, detail="" )
         except:
             self.db.rollback()
-            raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )                                        
+            raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )     
+
+class FileIO:
+    def __init__(self, directory):
+        self.directory = directory
+
+    async def create(self, files: List = []):
+        try:
+            for file in files:
+                file = await file.read()
+                file_id = utils.gen_alphanumeric_code_lower(length=20)
+                file_type = file.content_type.split('/')
+                file_directory = "{directory}/{file_id}.{file_type}".format(directory=self.directory, file_id=file_id, file_type=file_type[1])
+                if await utils.create_file(file_directory, image):
+                    return file_directory                
+        except OSError:
+            print("{}".format(sys.exc_info()))
+        except:
+            print("{}".format(sys.exc_info()))
+            raise HTTPException(status_code=500, detail="something went wrong while trying to add images")
+
+    async def delete(self, files: List = []):
+        try:
+            return
+        except OSError:
+            print("{}".format(sys.exc_info()))
+        except:
+            print("{}".format(sys.exc_info()))
+            raise HTTPException(status_code=500, detail="something went wrong while trying to delete images")
+
+class FolderIO:
+    def __init__(self, directory):
+        self.directory = directory
+
+    async def create(self, folder_name):
+        try:
+            if utils.create_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
+                return True   
+        except OSError:
+            print ("Creation of the directory %s failed" % folder_name)   
+            print("{}".format(sys.exc_info()))   
+        except:
+            print("{}".format(sys.exc_info()))
+            raise HTTPException(status_code=500, detail="something went wrong while trying to add folder")
+
+    async def delete(self, folder_name):
+        try:
+            if utils.delete_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
+                return True
+        except OSError:
+            print ("Creation of the directory %s failed" % folder_name)
+            print("{}".format(sys.exc_info()))
+        except:
+            print("{}".format(sys.exc_info()))
+            raise HTTPException(status_code=500, detail="something went wrong while trying to delete folder")

@@ -1,16 +1,13 @@
-from fastapi import Depends, HTTPException
 from datetime import datetime, timedelta
-# from main import oauth2_scheme
 from typing import Optional
 import os, string, random
 import jwt
 
 SECRET_KEY = "fsdfsdfsdfsdflhiugysadf87w940e-=r0werpolwe$16$5*dfsdfsdf&&#$rrr$$)7a9563OO93f7099f6f0f4caa6cf63b88e8d3e7"
+ALGORITHM = "HS256"
 
 uppercase_and_digits = string.ascii_uppercase + string.digits
 lowercase_and_digits = string.ascii_lowercase + string.digits
-
-ALGORITHM = "HS256"
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -59,7 +56,20 @@ async def create_file(url,image):
 def delete_file(url):
     try:
         os.remove(url)
-        print("File Removed!")
+        return True
+    except:
+        return False
+
+def create_folder(url):
+    try:
+        os.mkdir(url)
+        return True
+    except:
+        return False
+    
+def delete_folder(url):
+    try:
+        os.rmdir(url)
         return True
     except:
         return False
