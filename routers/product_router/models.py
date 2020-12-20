@@ -23,10 +23,9 @@ class Products(Base):
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
    
-    # images
-
-    weight = relationship('WeightUnit', backref="products", uselist=False, lazy="dynamic")
+    images = relationship('ProductImages', backref="product", uselist=True, cascade="all, delete", lazy="dynamic")
     reviews = relationship('Reviews', backref="product", uselist=True, cascade="all, delete",lazy='dynamic')
+    weight = relationship('WeightUnit', backref="products", uselist=False, lazy="dynamic")
     currency = relationship('Currency', backref="products", uselist=False, lazy='dynamic')
     locations = relationship('Location', backref="products", uselist=True, lazy='dynamic')
     purchase_type_id = Column(Integer, ForeignKey("purchase_type.id"), nullable=False)
@@ -34,8 +33,15 @@ class Products(Base):
     currency_id = Column(Integer,ForeignKey("currency.id"), nullable=False)
     weight_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
     # backrefs
     # category
     # board
     # events
     # liked_by
+
+class ProductImages(Base):
+    __tablename__ = "product_images"
+
+    category_id = Column(Integer, ForeignKey('products.id'),primary_key=True)
+    image_url = Column(String, nullable=False,primary_key=True)
