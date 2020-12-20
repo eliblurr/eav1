@@ -69,6 +69,14 @@ async def get_prod_category(id, db: Session):
     # print(dir(item.category))
     return item.category.all()
 
+# create
+# update
+# read
+# read by id
+# read by location
+# delete
+# filter
+
 
 
 

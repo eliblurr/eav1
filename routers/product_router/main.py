@@ -1,27 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
-from . import crud, schemas
 from typing import List, Optional
-from pydantic import UUID4, EmailStr
-
+from . import crud, schemas
 from main import get_db
 
 router = APIRouter()
 
-# if validation:
-# , validation = Depends(verify_token)
-# raise HTTPException(status_code=400)
-
-# async def read_products(skip, limit, search, value, db: Session):
-# async def create_product( payload: schemas.ProductBase, db: Session):
-
-
-@router.post("/")
+@router.post("/", response_model=schemas.Product)
 async def create_product( payload: schemas.ProductBase, db: Session = Depends(get_db)):
     return await crud.create_product(payload, db)
     
 @router.get("/")
-# , response_model = List[schemas.Product]
 async def read_products(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
     return await crud.read_products(skip,limit,search,value,db)
 

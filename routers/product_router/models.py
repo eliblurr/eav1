@@ -19,19 +19,21 @@ class Products(Base):
     available_quantity = Column(Integer, nullable=False)
     initial_quantity = Column(Integer, nullable=False)
     wholesale_price = Column(Integer, nullable=True)
+    wholesale_quantity = Column(Integer, nullable=True)
     status = Column(Boolean, nullable = False, default = True)
+    weight = Column(Float, nullable=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
    
     images = relationship('ProductImages', backref="product", uselist=True, cascade="all, delete", lazy="dynamic")
     reviews = relationship('Reviews', backref="product", uselist=True, cascade="all, delete",lazy='dynamic')
-    weight = relationship('WeightUnit', backref="products", uselist=False, lazy="dynamic")
+    weight_unit = relationship('WeightUnit', backref="products", uselist=False, lazy="dynamic")
     currency = relationship('Currency', backref="products", uselist=False, lazy='dynamic')
     locations = relationship('Location', backref="products", uselist=True, lazy='dynamic')
     purchase_type_id = Column(Integer, ForeignKey("purchase_type.id"), nullable=False)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
     currency_id = Column(Integer,ForeignKey("currency.id"), nullable=False)
-    weight_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
+    weight_unit_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # backrefs
