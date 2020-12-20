@@ -1,7 +1,5 @@
-from main import api
-
 from fastapi.staticfiles import StaticFiles
-
+from main import api
 import os
 
 static_DIR = os.path.dirname(os.path.relpath(__file__))
