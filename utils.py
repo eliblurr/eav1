@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from compress import Compressor
 from typing import Optional
 import os, string, random
 import jwt
@@ -8,6 +9,9 @@ ALGORITHM = "HS256"
 
 uppercase_and_digits = string.ascii_uppercase + string.digits
 lowercase_and_digits = string.ascii_lowercase + string.digits
+
+compression = Compressor()
+compression.use_gzip() # or use_bz2, use_lzma, use_lz4, use_snappy
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -53,26 +57,37 @@ async def create_file(url,image):
     except:
         return False
 
-def delete_file(url):
+async def delete_file(url):
     try:
         os.remove(url)
         return True
     except:
         return False
 
-def create_folder(url):
+async def create_folder(url):
     try:
         os.mkdir(url)
         return True
     except:
         return False
     
-def delete_folder(url):
+async def delete_folder(url):
     try:
         os.rmdir(url)
         return True
     except:
         return False
 
-def compress_file():
-    return
+async def compress_file(binary_data):
+    try:
+        await compression.compress(binary_data, zlib_level=9)
+        return True
+    except:
+        return False
+
+async def decompress_file(binary_data):
+    try:
+        await compression.decompress(binary_data)
+        return True
+    except:
+        return False   
