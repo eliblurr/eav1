@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime, event
+from main import SessionLocal
 from database import Base
 import datetime
 
@@ -12,8 +13,8 @@ class WeightUnit(Base):
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
-@event.listens_for(Currency.__table__, 'after_create')
+@event.listens_for(WeightUnit.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
     db = SessionLocal()
-    db.add_all([ Currency(title='kilogram', symbol='kg'), Currency(title='pound', symbol='lb'))
+    db.add_all([ WeightUnit(title='kilogram', symbol='kg'), WeightUnit(title='pound', symbol='lb') ])
     db.commit()

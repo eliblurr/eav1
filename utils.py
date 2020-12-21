@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from compress import Compressor
+# from compress import Compressor
 from typing import Optional
 import os, string, random
 import jwt
@@ -10,8 +10,8 @@ ALGORITHM = "HS256"
 uppercase_and_digits = string.ascii_uppercase + string.digits
 lowercase_and_digits = string.ascii_lowercase + string.digits
 
-compression = Compressor()
-compression.use_gzip() # or use_bz2, use_lzma, use_lz4, use_snappy
+# compression = Compressor()
+# compression.use_gzip() # or use_bz2, use_lzma, use_lz4, use_snappy
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()

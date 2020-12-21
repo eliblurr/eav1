@@ -119,7 +119,11 @@ async def startup_event():
 # api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
 
+from fastapi import FastAPI, File, UploadFile
 
+@api.post("/files/")
+async def create_file(file: bytes = File(...)):
+    return {"file_size": len(file)}
 
 
 # from dotenv import load_dotenv

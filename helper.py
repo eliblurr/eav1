@@ -135,3 +135,13 @@ class FolderIO:
         except:
             print("{}".format(sys.exc_info()))
             raise HTTPException(status_code=500, detail="something went wrong while trying to delete folder")
+
+class ImageIO:
+    def __init__(self, directory):
+        self.directory = directory
+    
+    def create(self):
+        return
+    
+    def delete(self):
+        return
