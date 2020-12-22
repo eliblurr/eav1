@@ -22,3 +22,6 @@ httptools==0.1.1
 uvloop==0.14.0
 compress==0.0.3
 aiofiles==0.6.0
+Pillow==6.2.2
+Pillow==8.0.1
+libimagequant==2.13.0.0

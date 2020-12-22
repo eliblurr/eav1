@@ -33,7 +33,6 @@ class CategoryImages(Base):
     __tablename__ = "category_images"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-
     category_id = Column(Integer, ForeignKey('categories.id'))
     image_url = Column(String, nullable=True)
 

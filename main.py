@@ -78,7 +78,7 @@ async def startup_event():
 # from routers.currency_router import main as currency
 # from routers.location_router import main as location
 # from routers.policies_router import main as policies
-# from routers.category_router import main as category
+from routers.category_router import main as category
 # from routers.timeline_router import main as timeline
 # from routers.reviews_router import main as reviews
 # from routers.product_router import main as product
@@ -101,7 +101,7 @@ async def startup_event():
 # api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 # api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 # api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
-# api.include_router(category.router,prefix="/api/categories",tags=["category"])
+api.include_router(category.router,prefix="/api/categories",tags=["category"])
 # api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 # api.include_router(location.router,prefix="/api/locations",tags=["location"])
 # api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
@@ -118,13 +118,6 @@ async def startup_event():
 # api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
-
-from fastapi import FastAPI, File, UploadFile
-
-@api.post("/files/")
-async def create_file(file: bytes = File(...)):
-    return {"file_size": len(file)}
-
 
 # from dotenv import load_dotenv
 # load_dotenv()

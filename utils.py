@@ -49,6 +49,9 @@ def gen_alphanumeric_code_lower(length):
     code = ''.join((random.choice(lowercase_and_digits) for i in range(length)))
     return code
 
+async def folder_exists(directory):
+    return os.path.isdir(directory)
+
 async def create_file(url,image):
     try:
         with open('{url}'.format(url=url), 'wb') as new_image:

@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from sqlalchemy import and_
 from typing import List
+from io import BytesIO
+from PIL import Image
 import utils
 import sys
 
@@ -115,8 +117,9 @@ class FolderIO:
         self.directory = directory
 
     async def create(self, folder_name):
+        self.folder_name = folder_name
         try:
-            if utils.create_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
+            if await utils.create_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
                 return True   
         except OSError:
             print ("Creation of the directory %s failed" % folder_name)   
@@ -127,7 +130,45 @@ class FolderIO:
 
     async def delete(self, folder_name):
         try:
-            if utils.delete_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
+            if await utils.delete_folder( "{directory}/{folder_name}".format(directory=self.directory, folder_name=folder_name) ):
+                return True
+        except OSError:
+            print ("Creation of the directory %s failed" % folder_name)
+            print("{}".format(sys.exc_info()))
+        except:
+            print("{}".format(sys.exc_info()))
+            raise HTTPException(status_code=500, detail="something went wrong while trying to delete folder")
+        
+    async def _directory(self):
+        return "{}/{}".format(self.directory,self.folder_name)
+
+class ImageIO:
+    def __init__(self, directory):
+        self.directory = directory
+    
+    async def create(self, image: bytes, image_name, image_ext ):
+        try:
+            image = Image.open(BytesIO(image))
+            image.save("{dir}/{image_name}.{image_ext}".format(dir=self.directory, image_name=image_name,image_ext=image_ext))
+            return True
+        except:
+            print("{}".format(sys.exc_info()))
+            return False
+    
+    async def create_thumbnail(self, image: bytes, image_name, image_ext , x=300, y=300):
+        try:
+            image = Image.open(BytesIO(image))
+            image.thumbnail((x,y))
+            image.save("{dir}/{image_name}.{image_ext}".format(dir=self.directory, image_name=image_name,image_ext=image_ext))
+            return True
+        except:
+            print("{}".format(sys.exc_info()))
+            return False
+
+    
+    async def delete(self, url):
+        try:
+            if utils.delete_folder( "{directory}{url}".format(directory=self.directory, url=url) ):
                 return True
         except OSError:
             print ("Creation of the directory %s failed" % folder_name)
@@ -136,12 +177,13 @@ class FolderIO:
             print("{}".format(sys.exc_info()))
             raise HTTPException(status_code=500, detail="something went wrong while trying to delete folder")
 
-class ImageIO:
-    def __init__(self, directory):
-        self.directory = directory
+    async def show(self, image: bytes):
+        image = Image.open(BytesIO(image))
+        return image.show()
+
+    async def resize(self, image: bytes, x, y):
+        image = Image.open(BytesIO(image))
+        return image.thumbnail((x, y))
     
-    def create(self):
-        return
-    
-    def delete(self):
-        return
+    async def _directory(self):
+        return "{}".format(self.directory)
