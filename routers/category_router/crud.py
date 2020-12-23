@@ -1,11 +1,12 @@
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from ..product_router.crud import read_products_by_id
+from ..product_router.models import Products
 from fastapi import Depends, HTTPException
 from static.main import category_DIR
+from helper import ImageIO, FolderIO
 from sqlalchemy import update, and_
 from sqlalchemy.orm import Session
 from . import models, schemas
-from helper import ImageIO, FolderIO
 from typing import List
 from main import get_db
 import utils
@@ -14,6 +15,7 @@ import sys
 folder_io = FolderIO(category_DIR)
 
 async def create_category(payload: schemas.CreateCategory, images, db: Session):
+    urls = []
     try:
         folder_name = utils.gen_alphanumeric_code_lower(length=15)
         while await utils.folder_exists(category_DIR+"/"+folder_name):
@@ -21,7 +23,7 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
         
         if not await folder_io.create(folder_name):
             raise HTTPException(status_code=500)
-        
+
         image_io = ImageIO(await folder_io._directory())
 
         for image in images:
@@ -30,129 +32,195 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
             image_b = await image.read()
 
             if ftype == 'image':
-                await image_io.create_thumbnail(image_b, fn, fext , 200, 200)
-    
-            # print(fn)
-            # print(ftype)
+                await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+                urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
 
-            # print(type(images.index(image)))
-            # print(images.index(image)+1)
-            # print(type(await image.read()))
-        
-            
-            # print(fn)
-            # print(fext)
+        new_category = models.Categories(**payload.dict())
+        db.add(new_category) 
+        db.flush()
 
-        
-        # print(type(await file.read()))
-        # im = Image.open(file)
-        # print(im.format, im.size, im.mode)
-        # im.show()
-        # return {"filename": file.filename}
-        
-        # print(category_DIR)
-        # print(category_folder)
-    except:
+        if len(urls):
+            for url in urls:
+                url = models.CategoryImages(image_url=url, folder_name=folder_name)
+                new_category.images.append(url)
+
+        db.commit()
+        db.refresh(new_category)
+        return new_category
+
+    except IntegrityError:
+        db.rollback()      
         print("{}".format(sys.exc_info()))
+        await utils.delete_folder(category_DIR+"/"+folder_name)        
+        raise HTTPException(status_code=500, detail="UNIQUE constraint failed on field")
+        
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        await utils.delete_folder(category_DIR+"/"+folder_name)
         raise HTTPException(status_code=500, detail="failed to upload images")
 
-    
+async def read_category(skip: int, limit: int, search:str, value:str, db: Session):
+    base = db.query(models.Categories)
+    if search and value:
+        try:
+            base = base.filter(models.Categories.__table__.c[search].like("%" + value + "%"))
+        except KeyError:
+            return base.offset(skip).limit(limit).all()
+    return base.offset(skip).limit(limit).all()
 
-# async def create_category(payload: schemas.CreateCategory, images, db: Session):
+async def read_category_by_id(id: int, db: Session):
+    return db.query(models.Categories).filter(models.Categories.id == id).first()
 
-#     urls = []
+async def read_category_products(id:int, skip: int, limit: int, search:str, value:str, db: Session):
+    base = db.query(models.Categories).filter(models.Categories.id == id).first()
+    if not base:
+        raise HTTPException(status_code=404)
+    base = base.category_items
+    if search and value:
+        try:
+            base = base.filter(models.Products.__table__.c[search].like("%" + value + "%")) 
+        except KeyError:
+            return base.offset(skip).limit(limit).all()
+    return base.offset(skip).limit(limit).all()
+    # db.query(models.Categories).filter(models.Categories.id == id).first().category_items.offset(skip).limit(limit).all()
 
-#     try:
-#         for file in images:
-#             image = await file.read()
-#             image_id = utils.gen_alphanumeric_code_lower(length=20)
-#             _type = file.content_type.split('/')
+async def update_category(id: int, payload: schemas.UpdateCategory, db: Session):
+    if not await read_category_by_id(id, db):
+        raise HTTPException(status_code=404)
+    try:
+        category = db.query(models.Categories).filter(models.Categories.id == id).update(payload.dict(exclude_unset=True))
+        db.commit()
+        return await read_category_by_id(id, db)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail = "unique constraint failed on index")
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+    return
 
-#             image_url = '/c1a43tnrz5phmwh3/{image_id}.{image_format}'.format(image_id=image_id, image_format=_type[1] )
+async def delete_category(id: int, db: Session):
+    try:
+        category = await read_category_by_id(id, db)
+        if category and len(category.images):
+            await utils.delete_folder(category_DIR+"/"+category.images[0].folder_name)
+            db.delete(category)
+            db.commit()
+        return True
+    except:
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500, detail="{}".format(sys.exc_info()) )
+
+async def add_item_to_category(id: int, payload: List[int], db: Session):
+    category = await read_category_by_id(id, db)
+    if not category:
+        raise HTTPException(status_code=404, detail="category not found")
+    try:
+        for id in payload:
+            product = await read_products_by_id(id, db)
+            if product:
+                category.category_items.append(product)
+        db.commit()
+        db.refresh(category)
+        return category
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500)
+
+async def remove_item_from_category(id: int, payload: List[int], db: Session):
+    category = await read_category_by_id(id, db)
+    if not category:
+        raise HTTPException(status_code=404, detail="category not found")
+    try:
+        for id in payload:
+            product = await read_products_by_id(id, db)
+            if product:
+                category.category_items.remove(product)
+        db.commit()
+        db.refresh(category)
+        return category
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500)
+
+async def add_image_to_category(id: int, images, db: Session):
+    category = await read_category_by_id(id, db)
+    if not category:
+        raise HTTPException(status_code=404, detail="category not found")
+
+    image_io = ImageIO(await folder_io._directory())
+    urls = []
+    try:
+        if len(category.images) and await utils.folder_exists(category_DIR+"/"+category.images[0].folder_name):
+            print(category_DIR+"/"+category.images[0].folder_name)
+
+            for image in images:
+                ftype, fext = image.content_type.split('/')
+                fn = "img_"+str(images.index(image)+1)
+                image_b = await image.read()
+
+                if ftype == 'image':
+                    await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
+                    category.images.append(new_image_obj)
+                
+        else:
+            folder_name = utils.gen_alphanumeric_code_lower(length=15)
+            while await utils.folder_exists(category_DIR+"/"+folder_name):
+                continue
             
-#             if not _type[0] == 'image':
-#                 continue
+            if not await folder_io.create(folder_name):
+                raise HTTPException(status_code=500)
 
-#             if await utils.create_file('{static_DIR}{image_url}'.format(static_DIR=static_DIR,image_url=image_url), image):
-#                 urls.append(image_url)
+            image_io = ImageIO(await folder_io._directory())
+
+            for image in images:
+                ftype, fext = image.content_type.split('/')
+                fn = "img_"+str(images.index(image)+1)
+                image_b = await image.read()
+
+                # if ftype == 'image':
+                #     await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+                #     urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
+                
+                if ftype == 'image':
+                    await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
+                    category.images.append(new_image_obj)
+
+            # new_category = models.Categories(**payload.dict())
+            # db.add(new_category) 
+            # db.flush()  
+
+            print('')
+        # await utils.delete_folder()
     
-#     except:
-#         raise HTTPException(status_code=500, detail="failed to upload images")
-
-#     try:  
-#         new_category = models.Categories(**payload.dict())
-#         db.add(new_category) 
-#         db.flush()
+    # folder_name = utils.gen_alphanumeric_code_lower(length=15)
+    #     while await utils.folder_exists(category_DIR+"/"+folder_name):
+    #         continue
         
-#         if len(urls):
-#             for url in urls:
-#                 url = models.CategoryImages(image_url='{static_DIR}{url}'.format(static_DIR=static_DIR,url=url))
-#                 new_category.images.append(url)
+    #     if not await folder_io.create(folder_name):
+    #         raise HTTPException(status_code=500)
 
-#         db.commit()
-#         db.refresh(new_category)
-#         return new_category
+    #     image_io = ImageIO(await folder_io._directory())
 
-#     except IntegrityError as e:
-#         db.rollback()
-#         raise HTTPException(status_code=500, detail="IntegrityError: UNIQUE constraint failed")
-        
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+    #     for image in images:
+    #         ftype, fext = image.content_type.split('/')
+    #         fn = "img_"+str(images.index(image)+1)
+    #         image_b = await image.read()
 
-# async def delete_category(id: int, db: Session):
-#     try:
-#         category = await read_category_by_id(id, db)
-#         if category:
-#             for image in category.images:
-#                 utils.delete_file(image.image_url)
-#             db.delete(category)
-#             db.commit()
-#         return True
+    #         if ftype == 'image':
+    #             await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+    #             urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
 
-#     except:
-#         print("{}".format(sys.exc_info()))
-#         raise HTTPException(status_code=500)
+    # category.images[0].folder_name
 
-# async def add_item_to_category(id: int, payload: List[int], db: Session):
-#     category = await read_category_by_id(id,db)
-#     if not category:
-#         raise HTTPException(status_code=404, detail="could not find category")
-#     try:
-#         for id in payload:
-#             product = await read_products_by_id(id, db)
-#             if product:
-#                 category.category_items.append(product)
+    # if len(urls):
+    #         for url in urls:
+    #             url = models.CategoryImages(image_url=url, folder_name=folder_name)
+    #             new_category.images.append(url)
 
-#         db.commit()
-#         db.refresh(category)
-#         return category
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500)
-
-# async def remove_item_from_category(id: int, payload: List[int], db: Session):
-#     category = await read_category_by_id(id,db)
-#     if not category:
-#         raise HTTPException(status_code=404, detail="could not find category")
-#     try:
-#         for id in payload:
-#             product = await read_products_by_id(id, db)
-#             if product:
-#                 category.category_items.remove(product)
-
-#         db.commit()
-#         db.refresh(category)
-#         return category
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500)
-
-# async def add_image_to_category(id: int, image, db: Session):
-#     category = await read_category_by_id(id,db)
-#     if not category:
-#         raise HTTPException(status_code=404, detail="could not find category")
 
 #     try:
 #         _image = await image.read()
@@ -174,44 +242,14 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
 #         db.commit()
 #         db.refresh(category)
 #         return category
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500)
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500)
 
-# async def update_category_details(id: int, payload: schemas.UpdateCategory, db: Session):
-#     category = await read_category_by_id(id, db)
-#     if not category:
-#         raise HTTPException(status_code=404)
-
-#     try:
-#         db.query(models.Categories).filter(models.Categories.id == id).update(payload.dict(exclude_unset=True))
-#         db.commit()
-#         return await read_category_by_id(id, db)
-
-#     except IntegrityError as e:
-#         db.rollback()
-#         raise HTTPException(status_code=500, detail="IntegrityError: UNIQUE constraint failed")
-        
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500)
-
-# async def read_category(skip: int, limit: int, search:str, value:str, db: Session):
-#     base = db.query(models.Categories)
-#     if search and value:
-#         try:
-#             base = base.filter(models.Categories.__table__.c[search].like("%" + value + "%"))
-#         except KeyError:
-#             return base.offset(skip).limit(limit).all()
-#     return base.offset(skip).limit(limit).all()
-
-# async def read_category_by_id(id: int, db: Session):
-#     return db.query(models.Categories).filter(models.Categories.id == id).first()
-
-# async def remove_image_from_category(id, image_id, db:Session):
-#     category = await read_category_by_id(id, db)
-#     if category is None:
-#         raise HTTPException(status_code=404)
+async def remove_image_from_category(id, image_id, db:Session):
+    category = await read_category_by_id(id, db)
+    if category is None:
+        raise HTTPException(status_code=404)
     
 #     image = db.query(models.CategoryImages).filter(and_(
 #         models.CategoryImages.id == image_id,
@@ -230,53 +268,3 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
 
 #     db.refresh(category)
 #     return category
-
-# async def read_category_products(id: int, skip: int, limit: int, db: Session):
-#     if not await read_category_by_id(id, db):
-#         raise HTTPException(status_code=404)
-#     return db.query(models.Categories).filter(models.Categories.id == id).first().category_items.offset(skip).limit(limit).all()
-    
-
-# from fastapi import FastAPI, File, UploadFile
-# from PIL import Image
-# from io import BytesIO
-# import sys
-# import os
-
-# @api.post("/files/")
-# async def create_file(file: bytes = File(...)):
-#     print(type(file))
-#     im = Image.open("./test.jpg")
-#     print(type(im))
-#     print(im.format, im.size, im.mode)
-#     im.show()
-
-#     im = Image.open(BytesIO(file))
-#     print(im.format, im.size, im.mode)
-#     im.show()
-
-#     f, e = os.path.splitext(file)
-
-#     print(type(im))
-#     print(f)
-#     print(e)
-
-
-    # stream = BytesIO(LEFT_THUMB)
-    # print(dir(BytesIO))
-
-    
-    # image = Image.open(stream).convert("RGBA")
-    # stream.close()
-    # image.show()
-    # return {"file_size": len(file)}
-
-# @api.post("/uploadfile/")
-# async def create_upload_file(file: UploadFile = File(...)):
-
-    # print(type(await file.read()))
-    # im = Image.open(file)
-    # print(im.format, im.size, im.mode)
-    # im.show()
-    # return {"filename": file.filename}
-

@@ -12,6 +12,7 @@ import os
 from routers.purchase_type_router import models
 from routers.subscriptions_router import models
 from routers.announcement_router import models
+from routers.payment_type_router import models
 from routers.weight_unit_router import models
 from routers.priorities_router import models
 from routers.delivery_router import models

@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 # from compress import Compressor
 from typing import Optional
 import os, string, random
+import shutil
 import jwt
 
 SECRET_KEY = "fsdfsdfsdfsdflhiugysadf87w940e-=r0werpolwe$16$5*dfsdfsdf&&#$rrr$$)7a9563OO93f7099f6f0f4caa6cf63b88e8d3e7"
@@ -76,7 +77,7 @@ async def create_folder(url):
     
 async def delete_folder(url):
     try:
-        os.rmdir(url)
+        shutil.rmtree(url)
         return True
     except:
         return False

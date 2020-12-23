@@ -27,9 +27,9 @@ class Products(Base):
    
     images = relationship('ProductImages', backref="product", uselist=True, cascade="all, delete", lazy="dynamic")
     reviews = relationship('Reviews', backref="product", uselist=True, cascade="all, delete",lazy='dynamic')
-    weight_unit = relationship('WeightUnit', backref="products", uselist=False, lazy="dynamic")
-    currency = relationship('Currency', backref="products", uselist=False, lazy='dynamic')
-    locations = relationship('Location', backref="products", uselist=True, lazy='dynamic')
+    weight_unit = relationship('WeightUnit', backref="products", uselist=False)
+    currency = relationship('Currency', backref="products", uselist=False)
+    locations = relationship('Location', backref="products", uselist=True)
     purchase_type_id = Column(Integer, ForeignKey("purchase_type.id"), nullable=False)
     location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
     currency_id = Column(Integer,ForeignKey("currency.id"), nullable=False)

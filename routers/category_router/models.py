@@ -35,4 +35,5 @@ class CategoryImages(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     category_id = Column(Integer, ForeignKey('categories.id'))
     image_url = Column(String, nullable=True)
+    folder_name = Column(String, nullable=True)
 
