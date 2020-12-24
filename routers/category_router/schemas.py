@@ -7,6 +7,7 @@ import datetime
 class CategoryImageBase(BaseModel):
     image_url: str
     category_id: int
+    folder_name: Optional[str]
 
 class CreateCategoryImage(CategoryImageBase):
     pass
@@ -14,6 +15,7 @@ class CreateCategoryImage(CategoryImageBase):
 class UpdateCategoryImage(BaseModel):
     image_url: Optional[str]
     category_id: Optional[int]
+    folder_name: Optional[str]
 
 class CategoryImage(CategoryImageBase):
     id: int
@@ -47,7 +49,7 @@ class Category(CategoryBase):
         orm_mode = True
 
 class CategoryItems(BaseModel):
-    category_items: Product
+    category_items: List[Product]
 
     class Config():
         orm_mode = True

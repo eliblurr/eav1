@@ -1,12 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, DateTime
 from sqlalchemy.orm import relationship, backref
-
-import datetime
-
-from database import Base, metadata, engine
-
 from ..product_router.models import Products
-
+from database import Base
+import datetime
 
 class Categories(Base):
     __tablename__ = "categories"
@@ -20,8 +16,6 @@ class Categories(Base):
 
     images = relationship('CategoryImages', backref="category", uselist=True, cascade="all, delete")
     category_items = relationship('Products', secondary='category_items', backref=backref('category', lazy='dynamic'), lazy='dynamic')
-
-    
 
 class CategoryItems(Base):
     __tablename__ = 'category_items'

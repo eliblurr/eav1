@@ -23,7 +23,7 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
             continue
         
         if not await folder_io.create(folder_name):
-            raise HTTPException(status_code=500)
+            raise HTTPException(status_code=500, detail="failed to create image store dir")
 
         image_io = ImageIO(await folder_io._directory())
 
@@ -32,8 +32,7 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
             fn = "img_"+str(images.index(image)+1)
             image_b = await image.read()
 
-            if ftype == 'image':
-                await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
+            if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 480, 704):
                 urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
 
         new_category = models.Categories(**payload.dict())
@@ -187,9 +186,9 @@ async def add_image_to_category(id: int, images, db: Session):
 async def remove_image_from_category(id, db:Session):
     category_image = db.query(models.CategoryImages).filter(models.CategoryImages.id == id).first()
     try: 
-        if category_image and await utils.file_exists(category_DIR+"/"+folder_name+"/"+image_name):
+        if category_image:
             p_dir, folder_name, image_name = category_image.image_url.split("/")
-            if await utils.delete_file(category_DIR+"/"+folder_name+"/"+image_name):
+            if await utils.file_exists(category_DIR+"/"+folder_name+"/"+image_name) and await utils.delete_file(category_DIR+"/"+folder_name+"/"+image_name):
                 db.delete(category_image)
                 db.commit()
         return True

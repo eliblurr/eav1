@@ -28,7 +28,7 @@ async def read_category_products(id: int,skip: int = 0, limit: int = 100, search
     return await crud.read_category_products(id, skip, limit, search, value, db)
 
 @router.patch("/{id}", description="update category details", response_model = schemas.Category)
-async def update_category_details(id: int, payload: schemas.UpdateCategory, db: Session = Depends(get_db)):
+async def update_category(id: int, payload: schemas.UpdateCategory, db: Session = Depends(get_db)):
     return await crud.update_category(id, payload, db)
 
 @router.delete("/{id}", description="delete category by id")
