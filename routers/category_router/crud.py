@@ -11,6 +11,7 @@ from typing import List
 from main import get_db
 import utils
 import sys
+import os
 
 folder_io = FolderIO(category_DIR)
 
@@ -148,101 +149,38 @@ async def add_image_to_category(id: int, images, db: Session):
     category = await read_category_by_id(id, db)
     if not category:
         raise HTTPException(status_code=404, detail="category not found")
-
-    image_io = ImageIO(await folder_io._directory())
     urls = []
     try:
         if len(category.images) and await utils.folder_exists(category_DIR+"/"+category.images[0].folder_name):
-            print(category_DIR+"/"+category.images[0].folder_name)
-
+            new_index = len(os.listdir(category_DIR+"/"+category.images[0].folder_name))            
+            image_io = ImageIO(category_DIR+"/"+category.images[0].folder_name)
             for image in images:
                 ftype, fext = image.content_type.split('/')
-                fn = "img_"+str(images.index(image)+1)
+                fn = "img_"+str(new_index+images.index(image)+1)
                 image_b = await image.read()
-
-                if ftype == 'image':
-                    await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
-                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
-                    category.images.append(new_image_obj)
-                
-        else:
+                if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 600, 200) and await utils.file_exists(category_DIR+"/"+category.images[0].folder_name+"/"+fn+"."+fext):
+                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=category.images[0].folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
+                    category.images.append(new_image_obj)         
+        else: 
             folder_name = utils.gen_alphanumeric_code_lower(length=15)
             while await utils.folder_exists(category_DIR+"/"+folder_name):
                 continue
-            
             if not await folder_io.create(folder_name):
-                raise HTTPException(status_code=500)
-
+                raise HTTPException(status_code=500, detail="could not create dir for image store")
             image_io = ImageIO(await folder_io._directory())
-
             for image in images:
                 ftype, fext = image.content_type.split('/')
                 fn = "img_"+str(images.index(image)+1)
-                image_b = await image.read()
-
-                # if ftype == 'image':
-                #     await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
-                #     urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
-                
-                if ftype == 'image':
-                    await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
-                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
-                    category.images.append(new_image_obj)
-
-            # new_category = models.Categories(**payload.dict())
-            # db.add(new_category) 
-            # db.flush()  
-
-            print('')
-        # await utils.delete_folder()
-    
-    # folder_name = utils.gen_alphanumeric_code_lower(length=15)
-    #     while await utils.folder_exists(category_DIR+"/"+folder_name):
-    #         continue
+                image_b = await image.read()                
+                if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 600, 200) and await utils.file_exists(category_DIR+"/"+folder_name+"/"+fn+"."+fext):
+                    new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=folder_name)
+                    category.images.append(new_image_obj)        
+        db.commit()
+        db.refresh(category)
+        return category
         
-    #     if not await folder_io.create(folder_name):
-    #         raise HTTPException(status_code=500)
-
-    #     image_io = ImageIO(await folder_io._directory())
-
-    #     for image in images:
-    #         ftype, fext = image.content_type.split('/')
-    #         fn = "img_"+str(images.index(image)+1)
-    #         image_b = await image.read()
-
-    #         if ftype == 'image':
-    #             await image_io.create_thumbnail(image_b, fn, fext , 600, 200)
-    #             urls.append("categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
-
-    # category.images[0].folder_name
-
-    # if len(urls):
-    #         for url in urls:
-    #             url = models.CategoryImages(image_url=url, folder_name=folder_name)
-    #             new_category.images.append(url)
-
-
-#     try:
-#         _image = await image.read()
-#         image_id = utils.gen_alphanumeric_code_lower(length=20)
-#         _type = image.content_type.split('/')
-#         image_url = '/c1a43tnrz5phmwh3/{image_id}.{image_format}'.format(image_id=image_id, image_format=_type[1] )
-            
-#         if not _type[0] == 'image':
-#             raise HTTPException(status_code=422)
-
-#         if not await utils.create_file('{static_DIR}{image_url}'.format(static_DIR=static_DIR,image_url=image_url), _image):
-#             raise HTTPException(status_code=500, detail="failed to upload image")    
-#     except:
-#         raise HTTPException(status_code=500, detail="failed to upload images")
-
-#     try:
-#         url = models.CategoryImages(image_url='{static_DIR}{image_url}'.format(static_DIR=static_DIR,image_url=image_url))
-#         category.images.append(url)
-#         db.commit()
-#         db.refresh(category)
-#         return category
     except:
+        print("{}".format(sys.exc_info()))
         db.rollback()
         raise HTTPException(status_code=500)
 
@@ -250,6 +188,13 @@ async def remove_image_from_category(id, image_id, db:Session):
     category = await read_category_by_id(id, db)
     if category is None:
         raise HTTPException(status_code=404)
+    
+    try: 
+        print('df')
+    except:
+        print('df')
+        # await utils.delete_folder(category_DIR+"/"+folder_name)
+        
     
 #     image = db.query(models.CategoryImages).filter(and_(
 #         models.CategoryImages.id == image_id,

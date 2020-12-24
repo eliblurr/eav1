@@ -53,6 +53,12 @@ def gen_alphanumeric_code_lower(length):
 async def folder_exists(directory):
     return os.path.isdir(directory)
 
+async def file_exists(path):
+    try:
+        return os.path.isfile(path)
+    except:
+        return False
+
 async def create_file(url,image):
     try:
         with open('{url}'.format(url=url), 'wb') as new_image:
@@ -94,4 +100,11 @@ async def decompress_file(binary_data):
         await compression.decompress(binary_data)
         return True
     except:
-        return False   
+        return False  
+
+async def len_of_dir_children(dir_path):
+    try:
+        length = await len(os.listdir(dir_path))
+        return length
+    except:
+        return False
