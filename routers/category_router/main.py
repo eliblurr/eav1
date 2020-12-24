@@ -49,7 +49,9 @@ async def remove_item_from_category(id: int, payload: List[int], db: Session = D
 async def add_image_to_category(id: int, images: List[UploadFile] = File(...),db: Session = Depends(get_db)):
     return await crud.add_image_to_category(id, images, db)
 
-@router.delete("/{id}/images/{image_id}", description="remove image for category", response_model = schemas.Category)
-async def remove_image_from_category(id: int, image_id: int, db: Session = Depends(get_db)):
-    return await crud.remove_image_from_category(id, image_id, db)
+@router.delete("/images/{id}", description="remove image for category")
+async def remove_image_from_category(id: int, db: Session = Depends(get_db)):
+    if not await crud.remove_image_from_category(id, db):
+        raise HTTPException( status_code=500)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 

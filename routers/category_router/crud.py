@@ -184,32 +184,19 @@ async def add_image_to_category(id: int, images, db: Session):
         db.rollback()
         raise HTTPException(status_code=500)
 
-async def remove_image_from_category(id, image_id, db:Session):
-    category = await read_category_by_id(id, db)
-    if category is None:
-        raise HTTPException(status_code=404)
-    
+async def remove_image_from_category(id, db:Session):
+    category_image = db.query(models.CategoryImages).filter(models.CategoryImages.id == id).first()
     try: 
-        print('df')
+        if category_image and await utils.file_exists(category_DIR+"/"+folder_name+"/"+image_name):
+            p_dir, folder_name, image_name = category_image.image_url.split("/")
+            if await utils.delete_file(category_DIR+"/"+folder_name+"/"+image_name):
+                db.delete(category_image)
+                db.commit()
+        return True
     except:
-        print('df')
-        # await utils.delete_folder(category_DIR+"/"+folder_name)
-        
-    
-#     image = db.query(models.CategoryImages).filter(and_(
-#         models.CategoryImages.id == image_id,
-#         models.CategoryImages.category_id == id
-#     )).first()
-#     if image is None:
-#         raise HTTPException(status_code=404)
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500, detail="{}".format(sys.exc_info()) )
 
-#     try:
-#         utils.delete_file('{image_url}'.format(image_url=image.image_url))
-#         db.delete(image)
-#         db.commit()
-#     except:
-#         db.rollback()
-#         raise HTTPException(status_code=500)
-
-#     db.refresh(category)
-#     return category
+# 704×480
+# 1280×720
+# 1920×1080
