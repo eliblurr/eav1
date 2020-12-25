@@ -1,6 +1,5 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
 from ..weight_unit_router.models import WeightUnit
-from ..location_router.models import Location
 from ..currency_router.models import Currency
 from ..reviews_router.models import Reviews
 from sqlalchemy.orm import relationship
@@ -29,9 +28,7 @@ class Products(Base):
     reviews = relationship('Reviews', backref="product", uselist=True, cascade="all, delete",lazy='dynamic')
     weight_unit = relationship('WeightUnit', backref="products", uselist=False)
     currency = relationship('Currency', backref="products", uselist=False)
-    locations = relationship('Location', backref="products", uselist=True)
     purchase_type_id = Column(Integer, ForeignKey("purchase_type.id"), nullable=False)
-    location_id = Column(Integer, ForeignKey("locations.id"), nullable=False)
     currency_id = Column(Integer,ForeignKey("currency.id"), nullable=False)
     weight_unit_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
@@ -41,9 +38,12 @@ class Products(Base):
     # board
     # events
     # liked_by
+    # locations
 
 class ProductImages(Base):
     __tablename__ = "product_images"
 
-    product_id = Column(Integer, ForeignKey('products.id'),primary_key=True)
-    image_url = Column(String, nullable=False,primary_key=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    product_id = Column(Integer, ForeignKey('products.id'))
+    image_url = Column(String, nullable=False)
+    folder_name = Column(String, nullable=True)

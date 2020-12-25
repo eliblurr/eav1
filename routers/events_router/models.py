@@ -1,11 +1,8 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, DateTime
 from sqlalchemy.orm import relationship, backref
-
-import datetime
-
-from database import Base, metadata, engine
-
 from ..product_router.models import Products
+from database import Base
+import datetime
 
 class Events(Base):
     __tablename__ = "events"
@@ -14,6 +11,7 @@ class Events(Base):
     title = Column(String, nullable=False, unique=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
+    status = Column(Boolean, nullable = False, default = True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

@@ -7,8 +7,9 @@ from main import get_db
 router = APIRouter()
 
 @router.post("/", response_model=schemas.Product)
-async def create_product( payload: schemas.ProductBase, db: Session = Depends(get_db)):
-    return await crud.create_product(payload, db)
+async def create_product( payload=Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)): 
+    return
+    # return await crud.create_product(payload, db)
     
 @router.get("/")
 async def read_products(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):

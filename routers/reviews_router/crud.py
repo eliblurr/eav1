@@ -88,12 +88,10 @@ async def update_review(id: int, payload:schemas.ReviewsUpdate, db: Session):
         db.rollback()
         raise HTTPException(status_code=500)
 
-    
 async def read_product_reviews(id: int, skip: int, limit: int, db: Session):
     if not await read_products_by_id(id, db):
         raise HTTPException(status_code=404)
     return db.query(Products).filter(Products.id == id).first().reviews.offset(skip).limit(limit).all()
-
 
 async def read_user_product_review(product_id: int, user_id: int, db: Session):
     return db.query(models.Reviews).filter(and_(models.Reviews.user_id == user_id,models.Reviews.product_id == product_id)).first()
