@@ -71,7 +71,7 @@ async def startup_event():
 # from routers.subscriptions_router import main as subscriptions
 from routers.announcement_router import main as announcement
 # from routers.payment_type_router import main as payment_type
-# from routers.weight_unit_router import main as weight_unit
+from routers.weight_unit_router import main as weight_unit
 # from routers.priorities_router import main as priorities
 # from routers.favorites_router import main as favorites
 from routers.about_us_router import main as about_us
@@ -98,7 +98,7 @@ from routers.t_c_router import main as t_c
 api.include_router(announcement.router,prefix="/api/announcements",tags=["announcements"])
 # api.include_router(payment_type.router,prefix="/api/payment_type",tags=["payment_type"])
 api.include_router(location.router3,prefix="/api/sub_countries",tags=["sub countries"])
-# api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_unit"])
+api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_unit"])
 # api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
 # api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 # api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])

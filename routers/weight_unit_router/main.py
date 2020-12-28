@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from . import crud, schemas,models
 from typing import List
-import utils
+from main import get_db
 import sys
 
 router = APIRouter()
@@ -26,8 +26,6 @@ async def read_weight_unit_by_id(id: int, db: Session = Depends(get_db)):
 async def update_weight_unit(id: int, payload: schemas.UpdateWeightUnit, db: Session = Depends(get_db)):
     return await crud.update_weight_unit(id, payload, db)
 
-@router.delete("/{id}", description="delete currency by id")
+@router.delete("/{id}", description="delete currency by id", status_code = status.HTTP_202_ACCEPTED)
 async def delete_weight_unit(id: int, db: Session = Depends(get_db)):
-    if not await crud.delete_weight_unit(id, db):
-        raise HTTPException( status_code=500)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await crud.delete_weight_unit(id, db)

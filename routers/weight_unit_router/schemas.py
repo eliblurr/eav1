@@ -4,7 +4,8 @@ import datetime
 
 class WeightUnitBase(BaseModel):
     title: str
-    symbol: Optional[str]
+    symbol: str
+    status: Optional[bool]
 
 class CreateWeightUnit(WeightUnitBase):
     pass
@@ -12,6 +13,7 @@ class CreateWeightUnit(WeightUnitBase):
 class UpdateWeightUnit(BaseModel):
     title: Optional[str]
     symbol: Optional[str]
+    status: Optional[bool]
 
 class WeightUnit(WeightUnitBase):
     id: int
