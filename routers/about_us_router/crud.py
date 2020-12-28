@@ -22,6 +22,7 @@ async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
         db.rollback()
         # log here
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def update_about_us(id: int, payload: schemas.UpdateAboutUs, db: Session):
     if not await read_about_us_by_id(id, db):

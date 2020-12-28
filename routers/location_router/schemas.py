@@ -1,34 +1,58 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
+import datetime
+
+class CountryBase(BaseModel):
+    name: str
+
+class CreateCountry(CountryBase):
+    pass
+
+class UpdateCountry(BaseModel):
+    name: Optional[str]
+
+class Country(CountryBase):
+    id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode = True
+
+class SubCountryBase(BaseModel):
+    name: str
+
+class CreateSubCountry(SubCountryBase):
+    country_id: int
+
+class UpdateSubCountry(BaseModel):
+    name: Optional[str]
+
+class SubCountry(CreateSubCountry):
+    id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode = True
 
 class LocationBase(BaseModel):
     name: str
-    country: str
-    sub_country: str
     geo_name_id: int
-
-class CreateLocation(BaseModel):
-    name: str
-    country: str
-    sub_country: str
-    geo_name_id: Optional[int]
+    status: Optional[bool]
+    
+class CreateLocation(LocationBase):
+    sub_country_id: int
 
 class UpdateLocation(BaseModel):
     name: Optional[str]
-    country: Optional[str]
-    sub_country: Optional[str]
     geo_name_id: Optional[int]
+    status: Optional[bool]
 
 class Location(LocationBase):
     id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
-    class Config():
+    class Config:
         orm_mode = True
-
-# {
-#     "sub_country": "Central",
-#     "name": "Winneba",
-#     "id": 2,
-#     "geo_name_id": 2294034,
-#     "country": "Ghana"
-#   }
