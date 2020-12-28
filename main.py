@@ -86,7 +86,7 @@ from routers.policies_router import main as policies
 # from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
 # from routers.events_router import main as events
-# from routers.promo_router import main as promo
+from routers.promo_router import main as promo
 # from routers.order_router import main as order
 # from routers.users_router import main as users
 # from routers.auth_router import main as auth
@@ -107,7 +107,7 @@ api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(category.router,prefix="/api/categories",tags=["category"])
 # api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 api.include_router(location.router,prefix="/api/locations",tags=["location"])
-# api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
+api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
 api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 # api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])

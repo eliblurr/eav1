@@ -1,15 +1,13 @@
 from pydantic import BaseModel
 from typing import Optional
-
 import datetime
 
 class PromoVoucherBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
-    # 
     discount: float
-    is_active: bool
+    status: bool
 
 class CreatePromoVoucher(PromoVoucherBase):
     pass
@@ -18,7 +16,7 @@ class UpdatePromoVoucher(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
-    is_active: Optional[bool]
+    status: Optional[bool]
 
 class PromoVoucher(PromoVoucherBase):
     id: int
@@ -29,4 +27,3 @@ class PromoVoucher(PromoVoucherBase):
 
     class Config:
         orm_mode = True
-
