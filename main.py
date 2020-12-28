@@ -76,7 +76,7 @@ from routers.announcement_router import main as announcement
 # from routers.favorites_router import main as favorites
 from routers.about_us_router import main as about_us
 # from routers.delivery_router import main as delivery
-# from routers.currency_router import main as currency
+from routers.currency_router import main as currency
 # from routers.location_router import main as location
 from routers.policies_router import main as policies
 # from routers.category_router import main as category
@@ -109,7 +109,7 @@ api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 # api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
-# api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
+api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
 # api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 # api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])

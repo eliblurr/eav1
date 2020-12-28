@@ -4,7 +4,8 @@ import datetime
 
 class CurrencyBase(BaseModel):
     title: str
-    symbol: Optional[str]
+    symbol: str
+    status: Optional[bool]
 
 class CreateCurrency(CurrencyBase):
     pass
@@ -12,6 +13,7 @@ class CreateCurrency(CurrencyBase):
 class UpdateCurrency(BaseModel):
     title: Optional[str]
     symbol: Optional[str]
+    status: Optional[bool]
 
 class Currency(CurrencyBase):
     id: int
