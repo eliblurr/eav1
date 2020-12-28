@@ -1,15 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from main import get_db, oauth2_scheme
-from pydantic import UUID4, EmailStr
 from . import crud, schemas,models
 from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import timedelta
-import utils
-import sys
-import jwt
-
-access_token_expires = timedelta(minutes=30)
+from typing import List
+from main import get_db
 
 router = APIRouter()
 
@@ -21,15 +14,13 @@ async def create_announcement(payload: schemas.CreateAnnouncement, db: Session =
 async def update_announcement(id:int, payload: schemas.UpdateAnnouncement, db: Session = Depends(get_db)):
     return await crud.update_announcement(id, payload, db)
 
-@router.delete("/", description="delete announcement")
+@router.delete("/", description="delete announcement", status_code = status.HTTP_202_ACCEPTED)
 async def delete_announcement(id: int, db: Session = Depends(get_db)):
-    if not await crud.delete_announcement(id, db):  
-        raise HTTPException( status_code=500, detail="Operation failed")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await crud.delete_announcement(id, db)
 
 @router.get("/", description="read announcements", response_model=List[schemas.Announcement])
-async def read_announcement(search:str=None, value:str=None, db: Session = Depends(get_db)):
-    return await crud.read_announcement(search, value, db)
+async def read_announcement(skip:int = 0, limit:int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
+    return await crud.read_announcement(skip, limit, search, value, db)
 
 @router.get("/{id}", description="read announcement by id", response_model=schemas.Announcement)
 async def read_announcement_by_id(id: int, db: Session = Depends(get_db)):
@@ -38,6 +29,6 @@ async def read_announcement_by_id(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404)
     return announcement
 
-@router.get("/random/announcement", description="read random announcement")
+@router.get("/_/random", description="read random announcement", response_model=schemas.Announcement)
 async def read_random_announcement(db: Session = Depends(get_db)):
     return await crud.read_random_announcement(db)

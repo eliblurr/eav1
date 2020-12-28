@@ -1,19 +1,22 @@
 from typing import Optional, List
 from pydantic import BaseModel
+import datetime
 
 class AnnouncementBase(BaseModel):
     description: str
-    is_active: bool
+    status: Optional[bool]
 
 class CreateAnnouncement(AnnouncementBase):
     pass
 
 class UpdateAnnouncement(BaseModel):
     description: Optional[str]
-    is_active: Optional[bool]
+    status: Optional[bool]
 
 class Announcement(AnnouncementBase):
     id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config():
         orm_mode = True

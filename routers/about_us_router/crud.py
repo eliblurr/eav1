@@ -1,54 +1,43 @@
-from sqlalchemy import update, and_, asc
-from typing import List
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-
-from main import get_db
-
-import utils
-
+from . import models, schemas
+from sqlalchemy import asc
+from typing import List
 import sys
 
-from . import models, schemas
-
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
-from ..product_router.crud import read_products_by_id
-
-
-async def create_about_us(payload: List[schemas.CreateAboutUs], db:Session):
+async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
     try:
-        for about_us in payload:
-            about_us = models.AboutUs(**about_us.dict())
-            db.add(about_us) 
+        # for about_us in payload:
+        about_us = models.AboutUs(**payload.dict())
+        db.add(about_us) 
         db.commit()
-
-        return payload
-
+        db.refresh(about_us)
+        return about_us
     except IntegrityError:
         db.rollback()
+        # log here
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
-
     except:
         db.rollback()
+        # log here
         print("{}".format(sys.exc_info()))
 
 async def update_about_us(id: int, payload: schemas.UpdateAboutUs, db: Session):
     if not await read_about_us_by_id(id, db):
         raise HTTPException(status_code=404)
     try:
-
-        db.query(models.AboutUs).filter(models.AboutUs.id == id).update(payload.dict(exclude_unset=True))
+        updated = db.query(models.AboutUs).filter(models.AboutUs.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
-        return await read_about_us_by_id(id, db)
-    
+        if bool(updated):
+            return await read_about_us_by_id(id, db)
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
-
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500, detail="{}".format(sys.exc_info()))
 
 async def delete_about_us(ids: List[int], db: Session):
     try:
@@ -61,6 +50,7 @@ async def delete_about_us(ids: List[int], db: Session):
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500, detail="failed to delete")
 
 async def read_about_us(search:str, value:str, db: Session):
     base = db.query(models.AboutUs)

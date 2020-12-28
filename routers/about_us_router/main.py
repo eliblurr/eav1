@@ -1,34 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
+from . import crud, schemas, models
 from sqlalchemy.orm import Session
-from . import crud, schemas,models
-from typing import List, Optional
-from pydantic import UUID4, EmailStr
-import jwt
-from datetime import timedelta
-import sys
-
-from main import get_db, oauth2_scheme
-import utils
-
-access_token_expires = timedelta(minutes=30)
+from typing import List
+from main import get_db
 
 router = APIRouter()
 
-@router.post("/", status_code=status.HTTP_201_CREATED, description="create new about us block", response_model = List[schemas.CreateAboutUs])
-async def create_about_us(payload: List[schemas.CreateAboutUs], db: Session = Depends(get_db)):
+@router.post("/", status_code=status.HTTP_201_CREATED, description="create about_us block(s)", response_model = schemas.AboutUs)
+async def create_about_us(payload: schemas.CreateAboutUs, db: Session = Depends(get_db)):
     return await crud.create_about_us(payload, db)
 
-@router.patch("/{id}", description="update faqs with id", response_model = schemas.AboutUs)
+@router.patch("/{id}", description="update about_us with id", response_model = schemas.AboutUs)
 async def update_about_us(id:int, payload: schemas.UpdateAboutUs, db: Session = Depends(get_db)):
     return await crud.update_about_us(id, payload, db)
 
-@router.delete("/", description="delete faqs")
+@router.delete("/", description="delete about_us", status_code = status.HTTP_202_ACCEPTED)
 async def delete_about_us(ids: List[int], db: Session = Depends(get_db)):
-    if not await crud.delete_about_us(ids, db):  
-        raise HTTPException( status_code=400)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await crud.delete_about_us(ids, db)
 
-@router.get("/", description="read faqs", response_model = List[schemas.AboutUs])
+@router.get("/", description="read about_us", response_model = List[schemas.AboutUs])
 async def read_about_us(search:str=None, value:str=None, db: Session = Depends(get_db)):
     return await crud.read_about_us(search, value, db)
 

@@ -1,6 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table, DateTime
-from sqlalchemy.orm import relationship, backref
-from database import Base, metadata, engine
+from sqlalchemy import Boolean, Column, Integer, String, DateTime
+from database import Base
 import datetime
 
 class Announcement(Base):
@@ -8,9 +7,6 @@ class Announcement(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     description = Column(String, nullable=True)
-    status = Column(Boolean, default=True)
-
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=datetime.datetime.utcnow)
-
-    # priority
+    status = Column(Boolean, nullable=False, default=True)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

@@ -1,53 +1,43 @@
-from sqlalchemy import update, and_, exc, desc, asc
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from . import models, schemas
+from sqlalchemy import asc
 from typing import List
-from fastapi import Depends, HTTPException
-
-
-from main import get_db
-
-import utils
-
 import sys
 
-from . import models, schemas
-
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-
-from ..product_router.crud import read_products_by_id
-
-async def create_policies(payload: List[schemas.CreatePolicies], db:Session):
+async def create_policies(payload: schemas.CreatePolicies, db:Session):
     try:
-        for policy in payload:
-            policy = models.Policies(**policy.dict())
-            db.add(policy) 
+        policy = models.Policies(**payload.dict())
+        db.add(policy) 
         db.commit()
-        return payload
-
-    except exc.IntegrityError:
+        db.refresh(policy)
+        return policy
+    except IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=422, detail = "unique constraint failed on index")
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def update_policy(id: int, payload: schemas.UpdatePolicies, db: Session):
     if not await read_policy_by_id(id, db):
         raise HTTPException(status_code = 404)
     try:
-        db.query(models.Policies).filter(models.Policies.id == id).update(payload.dict(exclude_unset=True))
+        updated = db.query(models.Policies).filter(models.Policies.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
-        return await read_policy_by_id(id, db)
-
-    except exc.IntegrityError:
+        if bool(updated):
+            return await read_policy_by_id(id, db)
+    except IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=422, detail = "unique constraint failed on index")
-
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def delete_policy(ids: List[int], db: Session):
     try:
@@ -60,15 +50,16 @@ async def delete_policy(ids: List[int], db: Session):
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def read_policies(search:str, value:str, db: Session):
+async def read_policies(skip:int, limit:int,search:str, value:str, db: Session):
     base = db.query(models.Policies)
     if search and value:
         try:
             base = base.filter(models.Policies.__table__.c[search].like("%" + value + "%"))
         except KeyError:
-            return base.order_by(asc(models.Policies.index)).all()
-    return base.order_by(asc(models.Policies.index)).all()
+            return base.order_by(asc(models.Policies.index)).offset(skip).limit(limit).all()
+    return base.order_by(asc(models.Policies.index)).offset(skip).limit(limit).all()
 
 async def read_policy_by_id(id: int, db: Session):
     return db.query(models.Policies).filter(models.Policies.id == id).first()
