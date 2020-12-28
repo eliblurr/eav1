@@ -1,21 +1,28 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
+import datetime
 
 class TCBase(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: str
-    
+    index: int
+    status: Optional[bool]
 
 class CreateTC(TCBase):
-    index : int
+    pass
 
-class UpdateTC(TCBase):
-    index : Optional[int]
+class UpdateTC(BaseModel):
+    title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
+    index: Optional[int]
+    status: Optional[bool]
 
 class TC(TCBase):
     id: int
-    index : int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
     
     class Config():
         orm_mode = True

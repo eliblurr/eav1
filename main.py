@@ -91,7 +91,7 @@ from routers.policies_router import main as policies
 # from routers.users_router import main as users
 # from routers.auth_router import main as auth
 from routers.faqs_router import main as faqs
-# from routers.t_c_router import main as t_c
+from routers.t_c_router import main as t_c
 
 # api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
@@ -101,7 +101,7 @@ api.include_router(announcement.router,prefix="/api/announcements",tags=["announ
 # api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
 # api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 # api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
-# api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
+api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(category.router,prefix="/api/categories",tags=["category"])
 # api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 # api.include_router(location.router,prefix="/api/locations",tags=["location"])
