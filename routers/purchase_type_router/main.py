@@ -6,24 +6,25 @@ from main import get_db
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.PurchaseType)
+@router.post("/", description="create purchase type", response_model=schemas.PurchaseType, status_code=status.HTTP_201_CREATED)
 async def create_purchase_type(payload: schemas.CreatePurchaseType, db: Session = Depends(get_db)):
     return await crud.create_purchase_type(payload, db)
 
-@router.get("/", response_model=List[schemas.PurchaseType])
+@router.get("/", description="get purchase types", response_model=List[schemas.PurchaseType])
 async def read_purchase_type(skip: int=0, limit: int=100, search:str = None, value:str = None, db: Session = Depends(get_db)):
     return await crud.read_purchase_type(skip, limit, search, value, db)
 
-@router.get("/{id}", response_model=schemas.PurchaseType)
+@router.get("/{id}", description="get purchase type by id", response_model=schemas.PurchaseType)
 async def read_purchase_type_by_id(id: int, db: Session = Depends(get_db)):
-    return await crud.read_purchase_type_by_id(id, db)
+    purchase_type = await crud.read_purchase_type_by_id(id, db)
+    if purchase_type is None:
+        raise HTTPException(status_code=404)
+    return purchase_type
 
 @router.patch("/{id}", response_model=schemas.PurchaseType)
 async def update_purchase_type(id: int, payload: schemas.UpdatePurchaseType, db: Session = Depends(get_db)):
     return await crud.update_purchase_type(id, payload, db)
 
-@router.delete("/{id}")
+@router.delete("/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def delete_purchase_type(id: int, db: Session = Depends(get_db)):
-    if not await crud.delete_purchase_type(id, db):
-        raise HTTPException( status_code=500)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return await crud.delete_purchase_type(id, db)

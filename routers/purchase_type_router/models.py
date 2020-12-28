@@ -12,10 +12,9 @@ class PurchaseType(Base):
     title = Column(String, nullable=False, unique=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    status = Column(Boolean, default=True)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    
+    status = Column(Boolean, nullable=False, default=True)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     items = relationship('Products', backref="purchase_type", uselist=True, cascade="all, delete")
 
 @event.listens_for(PurchaseType.__table__, 'after_create')

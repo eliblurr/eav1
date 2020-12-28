@@ -67,7 +67,7 @@ async def shutdown_event():
 async def startup_event():
     scheduler.start()
 
-# from routers.purchase_type_router import main as purchase_type
+from routers.purchase_type_router import main as purchase_type
 # from routers.subscriptions_router import main as subscriptions
 from routers.announcement_router import main as announcement
 # from routers.payment_type_router import main as payment_type
@@ -93,7 +93,7 @@ from routers.promo_router import main as promo
 from routers.faqs_router import main as faqs
 from routers.t_c_router import main as t_c
 
-# api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
+api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
 api.include_router(announcement.router,prefix="/api/announcements",tags=["announcements"])
 # api.include_router(payment_type.router,prefix="/api/payment_type",tags=["payment_type"])

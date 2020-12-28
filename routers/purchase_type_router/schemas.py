@@ -6,9 +6,10 @@ class PurchaseTypeBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
+    status: Optional[bool]
 
 class CreatePurchaseType(PurchaseTypeBase):
-    status: Optional[bool]
+    pass
 
 class UpdatePurchaseType(BaseModel):
     title: Optional[str]
@@ -18,9 +19,8 @@ class UpdatePurchaseType(BaseModel):
 
 class PurchaseType(PurchaseTypeBase):
     id: int
-    status: Optional[bool]
-    created_date: datetime.datetime
-    updated_date: datetime.datetime
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode = True
