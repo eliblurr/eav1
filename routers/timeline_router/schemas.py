@@ -6,9 +6,10 @@ class TimelineBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
+    status: Optional[bool]
 
 class CreateTimeline(TimelineBase):
-    status: Optional[bool]
+    pass
 
 class UpdateTimeline(BaseModel):
     title: Optional[str]
@@ -17,9 +18,9 @@ class UpdateTimeline(BaseModel):
     status: Optional[bool]
 
 class Timeline(TimelineBase):
-    status: bool
-    created_date: datetime.datetime
-    updated_date: datetime.datetime
+    id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode = True

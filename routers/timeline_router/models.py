@@ -1,4 +1,4 @@
-from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Numeric, Date, Float
+from sqlalchemy import Boolean, Column, Integer, String, DateTime
 from database import Base
 import datetime
 
@@ -10,7 +10,6 @@ class Timeline(Base):
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
     status = Column(Boolean, default=True, nullable=False)
-
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

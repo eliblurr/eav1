@@ -1,7 +1,7 @@
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
+from sqlalchemy import exc
 import sys
 
 async def create_timeline(payload: schemas.CreateTimeline, db: Session):
@@ -11,12 +11,14 @@ async def create_timeline(payload: schemas.CreateTimeline, db: Session):
         db.commit()
         db.refresh(new_timeline) 
         return new_timeline
-    except IntegrityError:
+    except exc.IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail="user with email {} already exists".format(payload.email))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def read_timeline(skip: int, limit: int, search: str, value:str, db: Session):
     try:
@@ -38,19 +40,20 @@ async def delete_timeline(id: int, db: Session):
         timeline = await read_timeline_by_id(id, db)
         if timeline:
             db.delete(timeline)
-            db.commit()
+        db.commit()
         return True
     except:
         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
 
 async def update_timeline(id: int, payload: schemas.UpdateTimeline, db: Session):
     if not await read_timeline_by_id(id, db):
-        raise HTTPException(status_code=404, detail="timeline not found")
+        raise HTTPException(status_code=404)
     try:
-        timeline = db.query(models.Timeline).filter(models.Timeline.id == id).update(payload.dict(exclude_unset=True).items())
+        updated = db.query(models.Timeline).filter(models.Timeline.id == id).update(payload.dict(exclude_unset=True).items())
         db.commit()
-        return await read_timeline_by_id(id, db)
-    except IntegrityError:
+        if bool(updated):
+            return await read_timeline_by_id(id, db)
+    except exc.IntegrityError:
         db.rollback()
         raise HTTPException(status_code=409, detail = "unique constraint failed on index")
     except:

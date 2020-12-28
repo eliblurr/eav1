@@ -80,7 +80,7 @@ from routers.currency_router import main as currency
 from routers.location_router import main as location
 from routers.policies_router import main as policies
 # from routers.category_router import main as category
-# from routers.timeline_router import main as timeline
+from routers.timeline_router import main as timeline
 # from routers.reviews_router import main as reviews
 # from routers.product_router import main as product
 # from routers.payment_router import main as payment
@@ -105,7 +105,7 @@ api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_un
 api.include_router(location.router2,prefix="/api/countries",tags=["countries"])
 api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(category.router,prefix="/api/categories",tags=["category"])
-# api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
+api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 api.include_router(location.router,prefix="/api/locations",tags=["location"])
 api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
 api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
