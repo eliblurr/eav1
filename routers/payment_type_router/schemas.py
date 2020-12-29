@@ -6,9 +6,10 @@ class PaymentTypeBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
+    status: Optional[bool]
 
 class CreatePaymentType(PaymentTypeBase):
-    status: Optional[int]
+    pass
 
 class UpdatePaymentType(BaseModel):
     title: Optional[str]
@@ -18,9 +19,8 @@ class UpdatePaymentType(BaseModel):
 
 class PaymentType(PaymentTypeBase):
     id: int
-    status: bool
-    created_date: datetime.datetime
-    updated_date: datetime.datetime
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode = True

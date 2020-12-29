@@ -12,9 +12,9 @@ class PaymentType(Base):
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
     status = Column(Boolean, default=True, nullable=False)
-    created_date = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_date = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    payments = relationship('Payment', backref="payment_type", uselist=True)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    payments = relationship('Payment', backref="payment_type", uselist=True, lazy="dynamic")
 
 @event.listens_for(PaymentType.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
