@@ -72,7 +72,7 @@ from routers.purchase_type_router import main as purchase_type
 from routers.announcement_router import main as announcement
 from routers.payment_type_router import main as payment_type
 from routers.weight_unit_router import main as weight_unit
-# from routers.priorities_router import main as priorities
+from routers.priorities_router import main as priorities
 # from routers.favorites_router import main as favorites
 from routers.about_us_router import main as about_us
 # from routers.delivery_router import main as delivery
@@ -101,7 +101,7 @@ api.include_router(location.router3,prefix="/api/sub_countries",tags=["sub count
 api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_unit"])
 # api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
 # api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
-# api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
+api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 api.include_router(location.router2,prefix="/api/countries",tags=["countries"])
 api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
 # api.include_router(category.router,prefix="/api/categories",tags=["category"])

@@ -7,7 +7,7 @@ import jwt
 from datetime import timedelta
 import sys
 
-from main import get_db, oauth2_scheme
+from main import get_db
 import utils
 
 router = APIRouter()
@@ -16,17 +16,7 @@ router = APIRouter()
 async def create_proirity(payload: schemas.PriorityCreate, db: Session = Depends(get_db)):
     return await crud.create_priority(payload, db)
 
-@router.delete("/{id}", description="delete priority with id")
-async def delete_priority(id: int, db: Session = Depends(get_db)):
-    if not await crud.delete_priority(id, db):  
-        raise HTTPException( status_code=400)
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-@router.patch("/{id}", status_code=status.HTTP_200_OK, description="update priority details with id")
-async def update_priority(id: int, payload: schemas.PriorityUpdate, db: Session = Depends(get_db)):
-    return await crud.update_priority(id, payload, db)
-
-@router.get("/", status_code=status.HTTP_200_OK, description="get/search for priorities", response_model=List[schemas.Priority])
+@router.get("/", description="get/search for priorities", response_model=List[schemas.Priority])
 async def read_priorities(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
     return await crud.read_priorities(skip, limit, search, value, db)
 
@@ -36,3 +26,11 @@ async def read_priority_by_id(id: int, db: Session = Depends(get_db)):
     if not priority:
         raise HTTPException(status_code=404)
     return priority
+
+@router.patch("/{id}", description="update priority details with id", response_model=schemas.Priority)
+async def update_priority(id: int, payload: schemas.PriorityUpdate, db: Session = Depends(get_db)):
+    return await crud.update_priority(id, payload, db)
+
+@router.delete("/{id}", description="delete priority with id", status_code=status.HTTP_202_ACCEPTED)
+async def delete_priority(id: int, db: Session = Depends(get_db)):
+    return await crud.delete_priority(id, db)

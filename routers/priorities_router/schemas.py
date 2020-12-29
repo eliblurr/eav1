@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from typing import Optional
-
 import datetime
 
 class PriorityBase(BaseModel):
@@ -8,6 +7,7 @@ class PriorityBase(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     priority : int
+    status: Optional[bool]
 
 class PriorityCreate(PriorityBase):
     pass
@@ -17,6 +17,7 @@ class PriorityUpdate(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     priority : Optional[int]
+    status: Optional[bool]
 
 class Priority(PriorityBase):
     id: int

@@ -11,7 +11,7 @@ class Priorities(Base):
     title = Column(String, nullable=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    priority = Column(Integer, unique=True, nullable=False)
+    priority = Column(Integer, unique=True, nullable=False, default=1)
     status = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
