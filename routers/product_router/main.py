@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, status, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from . import crud, schemas
@@ -6,21 +6,40 @@ from main import get_db
 
 router = APIRouter()
 
-@router.post("/", response_model=schemas.Product)
-async def create_product( payload=Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)): 
-    return await crud.create_product(payload, db)
+@router.post("/", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.Product)
+async def create_product(payload = Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)):
+    return await crud.create_product(payload, images, db)
+    print(payload)
+
+    # return await crud.create_category(payload, images, db)
+    # payload=Depends(schemas.CreateCategory.as_form), images: List[UploadFile]=File(...), db: Session=Depends(get_db)
+from typing import Union
+from pydantic import conlist
+
+@router.post("/sd")
+async def a(a: List[Union[int, None]] = Form(...)):
+    print(a)
+
+@router.post("/jhghhj")
+async def a(a: conlist(int, min_items=0) = Form(...)):
+    assert a
+    print(a)
+
+# @router.post("/", response_model=schemas.Product)
+# async def create_product( payload=Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)): 
+#     return await crud.create_product(payload, db)
     
-@router.get("/")
-async def read_products(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
-    return await crud.read_products(skip,limit,search,value,db)
+# @router.get("/")
+# async def read_products(skip: int = 0, limit: int = 100, search:str=None, value:str=None, db: Session = Depends(get_db)):
+#     return await crud.read_products(skip,limit,search,value,db)
 
-@router.get("/{id}")
-async def read_products(id: int, db: Session = Depends(get_db)):
-    return await crud.read_products_by_id(id ,db)
+# @router.get("/{id}")
+# async def read_products(id: int, db: Session = Depends(get_db)):
+#     return await crud.read_products_by_id(id ,db)
 
-@router.delete('/{id}')
-async def delete_product(id: int, db: Session = Depends(get_db)):
-    return await crud.delete_product(id, db)
+# @router.delete('/{id}')
+# async def delete_product(id: int, db: Session = Depends(get_db)):
+#     return await crud.delete_product(id, db)
 
 
 
@@ -40,43 +59,43 @@ async def delete_product(id: int, db: Session = Depends(get_db)):
 # async def update_item(id: int, payload: schemas.ItemCreate, db: Session = Depends(get_db)):
 #     return await crud.update_item(db,id,payload)
 
-import os
+# import os
 
-@router.post("/products/uploadfile/")
-async def create_image_and_directory(product_title: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    image = await file.read()
-    # ./image/[USER_ID]/[ALBUM_ID]/[PICTURE_ID].[FORMAT]
-    os.mkdir('./product_images/{}'.format(product_title))
-    with open('./product_images/{}/new_image.png'.format(product_title), 'wb') as new_image:
-        new_image.write(image)
-    return True
+# @router.post("/products/uploadfile/")
+# async def create_image_and_directory(product_title: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+#     image = await file.read()
+#     # ./image/[USER_ID]/[ALBUM_ID]/[PICTURE_ID].[FORMAT]
+#     os.mkdir('./product_images/{}'.format(product_title))
+#     with open('./product_images/{}/new_image.png'.format(product_title), 'wb') as new_image:
+#         new_image.write(image)
+#     return True
 
-@router.get("/products/image/")
-async def get_image_url(db: Session = Depends(get_db)):
-    # image = await file.read()
-    # os.mkdir('./product_images/{}'.format(product_title))
-    # with open('./product_images/{}/new_image.png'.format(product_title), 'wb') as new_image:
-    #     new_image.write(image)
-    return True
+# @router.get("/products/image/")
+# async def get_image_url(db: Session = Depends(get_db)):
+#     # image = await file.read()
+#     # os.mkdir('./product_images/{}'.format(product_title))
+#     # with open('./product_images/{}/new_image.png'.format(product_title), 'wb') as new_image:
+#     #     new_image.write(image)
+#     return True
 
-from pydantic import BaseModel
-import datetime
+# from pydantic import BaseModel
+# import datetime
 
-# from ..category_router.schemas import CategoryBase
-class Category(BaseModel):
-    id: int
-    title: str
-    metatitle: str
-    description: str
-    # images = relationship('CategoryImages', backref="category", uselist=True, cascade="all, delete")
+# # from ..category_router.schemas import CategoryBase
+# class Category(BaseModel):
+#     id: int
+#     title: str
+#     metatitle: str
+#     description: str
+#     # images = relationship('CategoryImages', backref="category", uselist=True, cascade="all, delete")
 
 
-    date_created: datetime.datetime
-    date_modified: datetime.datetime
 #     date_created: datetime.datetime
 #     date_modified: datetime.datetime
-#     images: List
+# #     date_created: datetime.datetime
+# #     date_modified: datetime.datetime
+# #     images: List
 
-@router.get("/test/{id}")
-async def test(id:int, db: Session = Depends(get_db)):
-    return await crud.get_prod_category(id, db)
+# @router.get("/test/{id}")
+# async def test(id:int, db: Session = Depends(get_db)):
+#     return await crud.get_prod_category(id, db)

@@ -108,3 +108,6 @@ async def len_of_dir_children(dir_path):
         return length
     except:
         return False
+
+def logical_xor(str1, str2):
+    return bool(str1) ^ bool(str2)

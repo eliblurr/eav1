@@ -17,19 +17,21 @@ class CreateProductImage(ProductImageBase):
 
 class UpdateProductImage(BaseModel):
     image_url: Optional[str]
-    category_id: Optional[int]
+    product_id: Optional[int]
     folder_name: Optional[str]
 
 class ProductImage(ProductImageBase):
     id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
-        orm_mode=True
+        orm_mode = True
 
 class ProductBase(BaseModel):
     title: str
     metatitle: Optional[str]
-    description: Optional[str]
+    description: str
     unit_price: float
     serial_number: Optional[str]
     available_quantity: Optional[int]
@@ -44,10 +46,13 @@ class ProductBase(BaseModel):
     currency_id: int
     
 class CreateProduct(ProductBase):
+    category_ids: List[int]
+    event_ids: List[int]
+    location_ids: List[int]
 
     @classmethod
-    def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(None), unit_price: float = Form(...), serial_number: str = Form(None), available_quantity: int = Form(None), initial_quantity:int = Form(...), wholesale_price:float=Form(None), wholesale_quantity:int=Form(...), status:bool=Form(True), weight:float=Form(None), purchase_type_id:int=Form(...), weight_unit_id:int=Form(None), owner_id:int=Form(...), currency_id:int=Form(...) ):
-        return cls(title=title, metatitle=metatitle, description=description, unit_price=unit_price, serial_number=serial_number, available_quantity=available_quantity, initial_quantity=initial_quantity, wholesale_price=wholesale_price, wholesale_quantity=wholesale_quantity, status=status, weight=weight, purchase_type_id=purchase_type_id, weight_unit_id=weight_unit_id, owner_id=owner_id, currency_id=currency_id)
+    def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(...), unit_price: float = Form(...), serial_number: str = Form(None), available_quantity: int = Form(None), initial_quantity:int = Form(...), wholesale_price:float=Form(None), wholesale_quantity:int=Form(None), status:bool=Form(True), weight:float=Form(None), purchase_type_id:int=Form(...), weight_unit_id:int=Form(None), owner_id:int=Form(...), currency_id:int=Form(...), category_ids: List[int] = Form(...), event_ids: List[int] = Form(...),location_ids: List[int] = Form(...) ):
+        return cls(title=title, metatitle=metatitle, description=description, unit_price=unit_price, serial_number=serial_number, available_quantity=available_quantity, initial_quantity=initial_quantity, wholesale_price=wholesale_price, wholesale_quantity=wholesale_quantity, status=status, weight=weight, purchase_type_id=purchase_type_id, weight_unit_id=weight_unit_id, owner_id=owner_id, currency_id=currency_id, category_ids=category_ids, event_ids=event_ids, location_ids=location_ids)
 
 class UpdateProduct(BaseModel):
     title: Optional[str]
@@ -70,12 +75,18 @@ class UpdateProduct(BaseModel):
 class Product(ProductBase):
     id: int
     images: List[ProductImage]
-    locations: List[Location]
-    weight_unit: WeightUnit
+    # locations: List[Location]
+    weight_unit: Optional[WeightUnit]
     currency: Currency
     owner_id: int
-    date_modified: datetime.datetime
     date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode = True
+
+# category
+# board
+# events
+# liked_by
+# locations

@@ -13,9 +13,8 @@ class Categories(Base):
     description = Column(String, nullable=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
     images = relationship('CategoryImages', backref="category", uselist=True, cascade="all, delete")
-    category_items = relationship('Products', secondary='category_items', backref=backref('category', lazy='dynamic'), lazy='dynamic')
+    category_items = relationship('Products', secondary='category_items', backref=backref('categories', lazy='dynamic'), lazy='dynamic')
 
 class CategoryItems(Base):
     __tablename__ = 'category_items'

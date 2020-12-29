@@ -79,10 +79,10 @@ from routers.about_us_router import main as about_us
 from routers.currency_router import main as currency
 from routers.location_router import main as location
 from routers.policies_router import main as policies
-# from routers.category_router import main as category
+from routers.category_router import main as category
 from routers.timeline_router import main as timeline
 # from routers.reviews_router import main as reviews
-# from routers.product_router import main as product
+from routers.product_router import main as product
 # from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
 # from routers.events_router import main as events
@@ -104,7 +104,7 @@ api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_un
 api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 api.include_router(location.router2,prefix="/api/countries",tags=["countries"])
 api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
-# api.include_router(category.router,prefix="/api/categories",tags=["category"])
+api.include_router(category.router,prefix="/api/categories",tags=["category"])
 api.include_router(timeline.router,prefix="/api/timeline",tags=["timeline"])
 api.include_router(location.router,prefix="/api/locations",tags=["location"])
 api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
@@ -112,7 +112,7 @@ api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 # api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
 api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
-# api.include_router(product.router,prefix="/api/products",tags=["product"])
+api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 # api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
