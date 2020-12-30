@@ -45,6 +45,21 @@ async def create_review(payload: schemas.ReviewsCreate, product_id: int, user_id
 async def read_review_by_id(id: int, db: Session):
     return db.query(models.Reviews).filter(models.Reviews.id == id).first()
 
+async def update_review(id: int, payload:schemas.ReviewsUpdate, db: Session):
+ 
+    review =  await read_review_by_id(id, db)
+    if not review:
+        raise HTTPException(status_code=404)
+    
+    try:
+        review = db.query(models.Reviews).filter(models.Reviews.id == id).update(payload.dict(exclude_unset=True))
+        db.commit()
+        return await read_review_by_id(id, db)
+    
+    except:
+        db.rollback()
+        raise HTTPException(status_code=500)
+
 async def delete_review(id: int, db: Session):
     
     try:
@@ -57,6 +72,8 @@ async def delete_review(id: int, db: Session):
     except:
         db.rollback()
         raise HTTPException(status_code=500)
+
+
 
 async def delete_user_product_review(product_id: int, user_id: int, db: Session):
 
@@ -73,25 +90,7 @@ async def delete_user_product_review(product_id: int, user_id: int, db: Session)
         db.rollback()
         raise HTTPException(status_code=500)
 
-async def update_review(id: int, payload:schemas.ReviewsUpdate, db: Session):
- 
-    review =  await read_review_by_id(id, db)
-    if not review:
-        raise HTTPException(status_code=404)
-    
-    try:
-        review = db.query(models.Reviews).filter(models.Reviews.id == id).update(payload.dict(exclude_unset=True))
-        db.commit()
-        return await read_review_by_id(id, db)
-    
-    except:
-        db.rollback()
-        raise HTTPException(status_code=500)
 
-async def read_product_reviews(id: int, skip: int, limit: int, db: Session):
-    if not await read_products_by_id(id, db):
-        raise HTTPException(status_code=404)
-    return db.query(Products).filter(Products.id == id).first().reviews.offset(skip).limit(limit).all()
 
 async def read_user_product_review(product_id: int, user_id: int, db: Session):
     return db.query(models.Reviews).filter(and_(models.Reviews.user_id == user_id,models.Reviews.product_id == product_id)).first()

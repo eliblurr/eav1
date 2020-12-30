@@ -25,9 +25,9 @@ async def read_review_by_id(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404)
     return review
 
-@router.get("/products/{id}", description="get review", response_model = List[schemas.Reviews])
-async def read_product_reviews(id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return await crud.read_product_reviews(id, skip, limit, db)
+# @router.get("/products/{id}", description="get review", response_model = List[schemas.Reviews])
+# async def read_product_reviews(id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+#     return await crud.read_product_reviews(id, skip, limit, db)
 
 @router.get("/{product_id}/users/{user_id}", description="get user review of product", response_model = schemas.Reviews)
 async def read_user_product_review(product_id: int, user_id: int, db: Session = Depends(get_db)):

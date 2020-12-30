@@ -219,27 +219,51 @@ class ImageFolderIO:
             print("{}".format(sys.exc_info()))                    
             raise HTTPException(status_code=500)
     
-    async def append_image_to_class(self):
-        return
+    async def append_image(self, _object, images, x, y):
+        try:
+            if len(_object.images) and await utils.folder_exists(self.directory+"/"+_object.images[0].folder_name):
+                new_index = len(os.listdir(self.directory+"/"+_object.images[0].folder_name))
+                image_io = ImageIO(self.directory+"/"+_object.images[0].folder_name)
+                folder_name = _object.images[0].folder_name
+       
+            else: 
+                new_index=0
+                folder_name = utils.gen_alphanumeric_code_lower(length=15)
+                while await utils.folder_exists(self.directory+"/"+folder_name):
+                    continue
+                if not await self.folder_io.create(folder_name):
+                    raise HTTPException(status_code=500, detail="failed to create dir")
+                image_io = ImageIO(await self.folder_io._directory())
+                
+            for image in images:
+                ftype, fext = image.content_type.split('/')
+                fn = "img_"+str(new_index+images.index(image)+1)
+                image_b = await image.read()
+                if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , x, y) and await utils.file_exists(self.directory+"/"+folder_name+"/"+fn+"."+fext):
+                    image_url = "{parent_folder}/{folder_name}/{fn}.{fext}".format(parent_folder= self.parent_folder, folder_name=folder_name, fn=fn, fext=fext)
+                    return image_url, folder_name
+        except:
+            print("{}".format(sys.exc_info()))                    
+            raise HTTPException(status_code=500)
+ 
+#             for image in images:
+#                 ftype, fext = image.content_type.split('/')
+#                 fn = "img_"+str(new_index+images.index(image)+1)
+#                 image_b = await image.read()
+#                 if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 600, 200) and await utils.file_exists(category_DIR+"/"+category.images[0].folder_name+"/"+fn+"."+fext):
+#                     new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=category.images[0].folder_name, fn=fn, fext=fext), folder_name=category.images[0].folder_name)
+#                     category.images.append(new_image_obj)         
+#         
+#             for image in images:
+#                 ftype, fext = image.content_type.split('/')
+#                 fn = "img_"+str(images.index(image)+1)
+#                 image_b = await image.read()                
+#                 if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 600, 200) and await utils.file_exists(category_DIR+"/"+folder_name+"/"+fn+"."+fext):
+#                     new_image_obj = models.CategoryImages(image_url="categories/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext), folder_name=folder_name)
+#                     category.images.append(new_image_obj)   
     
+
     
-
-    # 
-    #     while await utils.folder_exists(product_DIR+"/"+folder_name):
-    #         continue      
-
-    #     if not await folder_io.create(folder_name):
-    #         raise HTTPException(status_code=500, detail="failed to create dir")
-
-    #     urls = []
-    #     image_io = ImageIO(await folder_io._directory())
-    #     for image in images:
-    #         ftype, fext = image.content_type.split('/')
-    #         fn = "img_"+str(images.index(image)+1)
-    #         image_b = await image.read()
-    #         if ftype == 'image' and await image_io.create_thumbnail(image_b, fn, fext , 480, 704):
-    #             urls.append("products/{folder_name}/{fn}.{fext}".format(folder_name=folder_name, fn=fn, fext=fext) )
-
     # urls = []
     # try:
     #     if len(category.images) and await utils.folder_exists(category_DIR+"/"+category.images[0].folder_name):

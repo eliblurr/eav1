@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, status, Form
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from . import crud, schemas
@@ -13,17 +13,6 @@ async def create_product(payload = Depends(schemas.CreateProduct.as_form), image
 
     # return await crud.create_category(payload, images, db)
     # payload=Depends(schemas.CreateCategory.as_form), images: List[UploadFile]=File(...), db: Session=Depends(get_db)
-from typing import Union
-from pydantic import conlist
-
-@router.post("/sd")
-async def a(a: List[Union[int, None]] = Form(...)):
-    print(a)
-
-@router.post("/jhghhj")
-async def a(a: conlist(int, min_items=0) = Form(...)):
-    assert a
-    print(a)
 
 # @router.post("/", response_model=schemas.Product)
 # async def create_product( payload=Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)): 
