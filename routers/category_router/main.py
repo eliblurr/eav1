@@ -18,7 +18,7 @@ async def read_category(skip: int = 0, limit: int = 100, search:str = None, valu
 
 @router.get("/{id}", description="read category by id", response_model=schemas.Category)
 async def read_category_by_id(id: int, db: Session=Depends(get_db)):
-    category = await crud.read_category_by_id
+    category = await crud.read_category_by_id(id, db)
     if category is None:
         raise HTTPException(status_code=404)
     return category

@@ -31,11 +31,12 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
     
     results = (not(utils.logical_xor(payload.wholesale_price, payload.wholesale_quantity)), not(utils.logical_xor(payload.weight, payload.weight_unit_id)))
     if all(results):
-        if await read_weight_unit_by_id(payload.weight_unit_id, db) is None:
-            raise HTTPException(status_code=404)
         pass
     else:
         raise HTTPException(status_code=400)
+    
+    if bool(payload.weight_unit_id) and await read_weight_unit_by_id(payload.weight_unit_id, db) is None:
+        raise HTTPException(status_code=404)
 
     try:
         urls, folder_name = await image_folder_io.create(images, 700, 500)

@@ -27,7 +27,7 @@ async def create_category(payload: schemas.CreateCategory, images, db: Session):
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500)
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -125,11 +125,17 @@ async def add_product_to_category(id: int, payload: List[int], db: Session):
     try:
         for id in payload:
             product = await read_product_by_id(id, db)
-            if product:
+            if product and (product not in category.category_items): #check if prod is alrea
                 category.category_items.append(product)
+            else:
+                pass
         db.commit()
         db.refresh(category)
         return category
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409) #product already exists for 
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))

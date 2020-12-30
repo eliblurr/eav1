@@ -30,4 +30,6 @@ class CategoryImages(Base):
     category_id = Column(Integer, ForeignKey('categories.id'))
     image_url = Column(String, nullable=True)
     folder_name = Column(String, nullable=True)
+    date_created = Column(DateTime,  default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
