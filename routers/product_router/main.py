@@ -27,8 +27,7 @@ async def read_product_review(id: int, skip: int=0, limit: int=100, search: str=
 
 @router.patch("/{id}", description="update product", response_model=schemas.Product, status_code=status.HTTP_202_ACCEPTED)
 async def update_product(id: int, payload: schemas.UpdateProduct, db: Session=Depends(get_db)):
-    print(payload)
-    # return await crud.update_product(id, payload, db)
+    return await crud.update_product(id, payload, db)
 
 @router.patch("/{id}/images", description="add image to product", response_model=schemas.Product, status_code=status.HTTP_202_ACCEPTED)
 async def add_product_image(id: int, images: List[UploadFile]=File(...), db: Session=Depends(get_db)): 

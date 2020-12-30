@@ -109,28 +109,28 @@ async def read_product_review(id: int, skip: int, limit: int, search: str, value
 async def update_product(id: int, payload: schemas.UpdateProduct, db: Session):
     if not await read_product_by_id(id, db):
         raise HTTPException(status_code=404)
-    validate_purchase_type = not(utils.logical_xor(payload.purchase_type_id, await read_purchase_type_by_id(payload.purchase_type_id, db) is not None))
-    validate_currency = not(utils.logical_xor(payload.currency_id, await read_currency_by_id(payload.currency_id, db) is not None))
-    validate_weight_unit = not(utils.logical_xor(payload.weight_unit_id, await read_weight_unit_by_id(payload.weight_unit_id, db) is not None))
-    res = (validate_purchase_type, validate_currency, validate_weight_unit)
-    if all(res):
-        pass
-    else:
-        raise HTTPException(status_code=404, detail="{} not found".format('purchase_type' if not(res[0]) else 'currency' if not(res[1]) else 'weight_unit' ))
+
+    payload.purchase_type_id = payload.purchase_type_id if (bool(payload.purchase_type_id) and await read_purchase_type_by_id(payload.purchase_type_id, db) is not None) else None
+    payload.currency_id = payload.currency_id if (bool(payload.currency_id) and await read_currency_by_id(payload.currency_id, db) is not None) else None
+    payload.weight_unit_id = payload.weight_unit_id if (bool(payload.weight_unit_id) and await read_weight_unit_by_id(payload.weight_unit_id, db) is not None) else None
+    payload_dict = {k:v for (k,v) in payload.dict().items() if v is not None}
+
     try:      
-        updated = db.query(models.Products).filter(models.Products.id == id).update(payload.dict(exclude_unset=True))
+        updated = db.query(models.Products).filter(models.Products.id == id).update(payload_dict)
         db.commit()
         if bool(updated):
             return await read_product_by_id(id, db)
     except exc.IntegrityError:
         db.rollback()
+        db.close()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=409)
     except:
         db.rollback()
+        db.close()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
-
+    
 async def delete_product(id: int, db: Session):
     try:
         product = await read_product_by_id(id, db)
