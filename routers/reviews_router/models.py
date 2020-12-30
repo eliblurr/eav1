@@ -1,14 +1,7 @@
-from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Numeric, Date, DateTime, Float
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.orm import relationship
-from passlib.hash import pbkdf2_sha256 as sha256
+from database import Base
 import datetime
-
-from database import Base, SessionLocal
-
-from . import models
-
-import secrets
-
 
 class Reviews(Base):
     __tablename__ = "reviews"
@@ -19,7 +12,7 @@ class Reviews(Base):
     description = Column(String, nullable=True)
     ratings = Column(Float, nullable=False)
 
-    author = relationship('UserInfo')
+    # author = relationship('UserInfo')
     user_id = Column(Integer, ForeignKey("user_info.user_id"), nullable=True )
 
     product_id = Column(Integer, ForeignKey("products.id"), nullable=True )
