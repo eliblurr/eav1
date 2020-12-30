@@ -2,8 +2,8 @@ from ..weight_unit_router.schemas import WeightUnit
 from ..location_router.schemas import Location
 from ..currency_router.schemas import Currency
 from ..reviews_router.schemas import Reviews
+from pydantic import BaseModel, conint, Field
 from typing import List, Optional
-from pydantic import BaseModel
 from fastapi import Form
 import datetime
 
@@ -40,10 +40,10 @@ class ProductBase(BaseModel):
     wholesale_quantity: Optional[int]
     status: Optional[bool]
     weight: Optional[float]
-    purchase_type_id: int
-    weight_unit_id: Optional[int]
-    owner_id: int
-    currency_id: int
+    purchase_type_id: conint(gt=0)
+    weight_unit_id: Optional[conint(gt=0)]
+    owner_id: conint(gt=0)
+    currency_id: conint(gt=0)
     
 class CreateProduct(ProductBase):
     category_ids: List[int]
@@ -65,11 +65,9 @@ class UpdateProduct(BaseModel):
     wholesale_price: Optional[float]
     wholesale_quantity: Optional[int]
     status: Optional[bool]
-    purchase_type_id: Optional[int]
     weight: Optional[float]
     purchase_type_id: Optional[int]
     weight_unit_id: Optional[int]
-    owner_id: Optional[int]
     currency_id: Optional[int]
 
 class Product(ProductBase):
@@ -85,8 +83,8 @@ class Product(ProductBase):
     class Config:
         orm_mode = True
 
-# category
-# board
-# events
-# liked_by
-# locations
+class ProductReview(BaseModel):
+    reviews: List[Reviews]
+
+    class Config:
+        orm_mode = True
