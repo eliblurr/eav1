@@ -1,9 +1,7 @@
-from ..auth_router.crud import get_user_by_id
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import exc, and_
 from . import models, schemas
-from main import get_db
 import utils
 import sys
 import os

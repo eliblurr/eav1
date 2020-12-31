@@ -1,4 +1,4 @@
-from ..users_router.crud import get_user_by_email, get_user_by_id
+from ..users_router.crud import read_user_by_email, read_user_by_id
 from fastapi import Depends, HTTPException, BackgroundTasks
 from services.email import send_in_background
 from datetime import datetime, timedelta
@@ -19,7 +19,7 @@ refresh_token_duration = timedelta(days= os.environ.get('REFRESH_TOKEN_DURATION_
 reset_password_session_duration = os.environ.get('RESET_PASSWORD_SESSION_DURATION_IN_MINUTES') or 1
 
 async def authenticate(payload: schemas.Auth, db: Session):
-    user = await get_user_by_email(payload.email, db)
+    user = await read_user_by_email(payload.email, db)
 
     if not user:
         raise HTTPException(status_code=404, detail="user not found")
@@ -78,7 +78,7 @@ async def is_token_blacklisted(token: str, db: Session):
     return True
 
 async def request_password_reset(payload: schemas.Email, db: Session, background_tasks: BackgroundTasks):
-    user = await get_user_by_email(payload.email, db)
+    user = await read_user_by_email(payload.email, db)
 
     if not user:
         raise HTTPException(status_code=404, detail="user not found")

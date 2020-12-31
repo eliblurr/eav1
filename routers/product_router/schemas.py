@@ -1,7 +1,7 @@
 from ..weight_unit_router.schemas import WeightUnit
 from ..location_router.schemas import Location
 from ..currency_router.schemas import Currency
-from ..reviews_router.schemas import Reviews
+from ..reviews_router.schemas import Review
 from pydantic import BaseModel, conint, Field
 from typing import List, Optional
 from fastapi import Form
@@ -84,7 +84,7 @@ class Product(ProductBase):
         orm_mode = True
 
 class ProductReview(BaseModel):
-    reviews: List[Reviews]
+    reviews: List[Review]
 
     class Config:
         orm_mode = True

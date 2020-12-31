@@ -10,13 +10,10 @@ class Reviews(Base):
     title = Column(String, nullable=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    ratings = Column(Float, nullable=False)
-
-    # author = relationship('UserInfo')
-    user_id = Column(Integer, ForeignKey("user_info.user_id"), nullable=True )
-
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=True )
-
-    date_created = Column(DateTime,  default=datetime.datetime.utcnow)
-    date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    ratings = Column(Float, nullable=False, default=0)
+    status = Column(Boolean, nullable=False, default=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
+    date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

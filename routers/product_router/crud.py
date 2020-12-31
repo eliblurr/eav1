@@ -4,7 +4,7 @@ from ..location_router.crud import read_location_by_id
 from ..currency_router.crud import read_currency_by_id
 from helper import ImageIO, FolderIO, ImageFolderIO
 from ..category_router.models import Categories
-from ..users_router.crud import get_user_by_id
+from ..users_router.crud import read_user_by_id
 from ..location_router.models import Location
 from ..reviews_router.models import Reviews
 from fastapi import Depends, HTTPException
@@ -22,12 +22,11 @@ folder_io = FolderIO(product_DIR)
 image_folder_io = ImageFolderIO(product_DIR, 15, folder_io, 'products')
 
 async def create_product(payload: schemas.CreateProduct, images, db: Session):
-    results = (await read_purchase_type_by_id(payload.purchase_type_id, db) is not None, await read_currency_by_id(payload.currency_id, db) is not None, await get_user_by_id(payload.owner_id, db) is not None)
+    results = (await read_purchase_type_by_id(payload.purchase_type_id, db) is not None, await read_currency_by_id(payload.currency_id, db) is not None, await read_user_by_id(payload.owner_id, db) is not None)
     if all(results):
         pass
     else:
-        pass
-        # raise HTTPException(status_code=404, detail="{} not found".format('purchase_type' if not(results[0]) else 'currency' if not(results[1]) else 'user'))
+        raise HTTPException(status_code=404, detail="{} not found".format('purchase_type' if not(results[0]) else 'currency' if not(results[1]) else 'user'))
     
     results = (not(utils.logical_xor(payload.wholesale_price, payload.wholesale_quantity)), not(utils.logical_xor(payload.weight, payload.weight_unit_id)))
     if all(results):

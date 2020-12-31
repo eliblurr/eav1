@@ -2,10 +2,26 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 import datetime
 
+class UserInfo(BaseModel):
+    id: int
+    user_id: int
+    last_name: str
+    first_name: str
+    phone: Optional[str]
+    status: Optional[bool]
+    image_url: Optional[str]
+    middle_name: Optional[str]
+    is_verified: Optional[bool]
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode = True
+
 class UserBase(BaseModel):
     email: EmailStr
     
-class UserCreate(UserBase):
+class CreateUser(UserBase):
     password: Optional[str]
     first_name: str
     middle_name: Optional[str]
@@ -15,9 +31,9 @@ class UserCreate(UserBase):
     is_verified: bool
     auth_type_id: int
     user_type_id: int
-    status: Optional[bool] = True
+    status: Optional[bool]
 
-class UserUpdate(BaseModel):
+class UpdateUser(BaseModel):
     first_name: Optional[str]
     middle_name: Optional[str]
     last_name: Optional[str]
@@ -26,29 +42,13 @@ class UserUpdate(BaseModel):
     phone: Optional[str]
     status: Optional[bool]
 
-class ResetPassword(BaseModel):
-    password: str
-    code: Optional[str]
-
-class UserInfo(BaseModel):
-    id: int
-    first_name: Optional[str]
-    middle_name: Optional[str]
-    last_name: Optional[str]
-    phone: Optional[str]
-    image_url: Optional[str]
-    is_verified: Optional[bool] = True
-    status: Optional[bool] = True
-
-    date_created: datetime.datetime
-    date_modified: datetime.datetime
-
-    class Config:
-        orm_mode = True
-
 class User(UserBase):
     id: int
-    user_info : UserInfo
+    user_info: UserInfo
     
     class Config:
         orm_mode = True
+
+class ResetPassword(BaseModel):
+    password: str
+    code: Optional[str]

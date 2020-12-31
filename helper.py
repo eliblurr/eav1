@@ -219,6 +219,7 @@ class ImageFolderIO:
         except:
             print("{}".format(sys.exc_info()))                    
             raise HTTPException(status_code=500)
+            # "{}: {}".format(sys.exc_info()[0], sys.exc_info()[1])
     
     async def append_image(self, _object, images, x, y):
         try:

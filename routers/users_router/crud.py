@@ -1,121 +1,106 @@
 from ..auth_router.models import AuthType, ResetPasswordCodes
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from passlib.hash import pbkdf2_sha256 as sha256
-from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from sqlalchemy import exc, and_
 from . import models, schemas
-from main import get_db
-import sqlalchemy
-import utils
+from typing import List
 import sys
 
-async def create_user(payload: schemas.UserCreate , db: Session = Depends(get_db)):
-
+async def create_user(payload: schemas.CreateUser , db: Session):
     auth_type = db.query(AuthType).filter(AuthType.id == payload.auth_type_id).first()
-    if not auth_type:
-        raise HTTPException(status_code=404, detail="could not find auth_type that corresponds to the user you are trying to create" )
-    
     user_type = db.query(models.UserType).filter(models.UserType.id == payload.user_type_id).first()
-    if not user_type:
-        raise HTTPException(status_code=404, detail="could not find user_type that corresponds to the user you are trying to create" )
-    
+    res = (auth_type is not None, user_type is not None)
+    if all(res):
+        pass
+    else:
+        raise HTTPException(status_code=404, detail="{} not found".format('auth_type' if not(res[0]) else 'user_type'))
     info = {k:v for (k,v) in payload.dict().items() if k != 'email' and k != 'password' and k != 'auth_type_id' and k != 'user_type_id'}
-
     try:  
-        new_user = models.User(email=payload.email, password=models.User.generate_hash(payload.password), auth_type=auth_type, user_type=user_type)
+        new_user = models.User(email=payload.email, password=models.User.generate_hash(payload.password), auth_type_id=payload.auth_type_id, user_type_id=payload.user_type_id)
         db.add(new_user)
-
-        user_info = models.UserInfo(**info,user=new_user)
-        db.add(user_info) 
-
+        db.flush()
+        db.add(models.UserInfo(**info,user=new_user)) 
         db.commit()
         db.refresh(new_user) 
-
         return new_user
-
-    except IntegrityError:
+    except exc.IntegrityError:
         db.rollback()
-        #log error here
-        raise HTTPException(status_code=409, detail="user with email {} already exists".format(payload.email))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
-        #log error here
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def get_users(db: Session = Depends(get_db), skip: int = 0, limit: int = 100, search:str=None, value:str=None ):
+async def read_users(skip:int, limit:int, search:str, value:str, db: Session):
     try:
         base = db.query(models.User)
         if search and value:
             try:
-                base = base.filter(models.User.__table__.c[search].like("%" + value + "%"))
+                base = base.filter(models.User.email.like("%" + value + "%")) if search=='email' else base.join(models.UserInfo).filter(models.UserInfo.__table__.c[search].like("%" + value + "%"))
             except KeyError:
                 return base.offset(skip).limit(limit).all()
-        return base.offset(skip).limit(limit).all()
+        return base.offset(skip).limit(limit).all()  
     except:
-        #log error here
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
         
-async def get_user_by_id(id: int, db: Session = Depends(get_db)):
+async def read_user_by_id(id: int, db: Session):
     return db.query(models.User).filter(models.User.id == id).first()
 
-async def get_user_by_email(email: str, db: Session = Depends(get_db)):
-    return db.query(models.User).filter(models.User.email == email).first()
+async def read_user_by_email(email: str, db: Session):
+    return db.query(models.User).filter(models.User.email.like("%" + email + "%")).all()
     
-async def delete_user(id: int, db):
+async def delete_user(ids: List[int], db: Session):
     try:
-        user = await get_user_by_id(id, db)
-        if user:
-            db.delete(user)
-            db.commit()
+        for id in ids:
+            user = await read_user_by_id(id, db)
+            if user:
+                db.delete(user)
+        db.commit()
         return True
     except:
         db.rollback()
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def update_user(id: int, payload: schemas.UserUpdate, db: Session = Depends(get_db)):
-
-    if not await get_user_by_id(id, db):
-        raise HTTPException(status_code=404, detail="user not found")
-
+async def update_user(id:int, payload:schemas.UpdateUser, db:Session):
+    if not await read_user_by_id(id, db):
+        raise HTTPException(status_code=404)
     try:
-
-        res = db.query(models.UserInfo).filter(models.UserInfo.user_id == id).update(payload.dict(exclude_unset=True).items())
+        updated = db.query(models.UserInfo).filter(models.UserInfo.user_id == id).update(payload.dict(exclude_unset=True))
         db.commit()
-        return await get_user_by_id(id, db)
-
-    except IntegrityError:
+        if bool(updated):
+            return await read_user_by_id(id, db)
+    except exc.IntegrityError:
         db.rollback()
-        # log error here
-        raise HTTPException(status_code=409, detail = "unique constraint failed on index")
-
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
-        # log error here
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def verify_password(id, payload: schemas.ResetPassword, db: Session):
-    user = await get_user_by_id(id,db)
+    user = await read_user_by_id(id,db)
     if not user:
-        raise HTTPException(status_code=404, detail="user with id: {} was not found".format(id))
+        raise HTTPException(status_code=404)
     return models.User.verify_hash(payload.password, user.password)
 
 async def reset_password(id, payload: schemas.ResetPassword, db: Session):
-
-    if not await get_user_by_id(id,db):
-        raise HTTPException(status_code=404, detail="user with id: {} was not found".format(id))
-    
+    if not await read_user_by_id(id, db):
+        raise HTTPException(status_code=404)
     if not await verify_code(id, payload.code, db):
-        raise HTTPException(status_code=417, detail="could not verify reset code")
-    
+        raise HTTPException(status_code=417)
     try:
-        res = db.query(models.User).filter(models.User.id == id).update({'password':models.User.generate_hash(payload.password)})
+        updated = db.query(models.User).filter(models.User.id == id).update({'password':models.User.generate_hash(payload.password)})
         db.commit()
-        return True
-    
+        if bool(updated):
+            return True
     except:
         db.rollback()
-        # log error here
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def verify_code(id, code, db: Session):
-    return db.query(ResetPasswordCodes).filter(sqlalchemy.and_(ResetPasswordCodes.user_id == id, ResetPasswordCodes.code == code)).first()
+async def verify_code(user_id, code, db: Session):
+    return db.query(ResetPasswordCodes).filter(and_(ResetPasswordCodes.user_id == user_id, ResetPasswordCodes.code == code)).first()

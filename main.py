@@ -81,14 +81,14 @@ from routers.location_router import main as location
 from routers.policies_router import main as policies
 from routers.category_router import main as category
 from routers.timeline_router import main as timeline
-# from routers.reviews_router import main as reviews
+from routers.reviews_router import main as reviews
 from routers.product_router import main as product
 # from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
 # from routers.events_router import main as events
 from routers.promo_router import main as promo
 # from routers.order_router import main as order
-# from routers.users_router import main as users
+from routers.users_router import main as users
 # from routers.auth_router import main as auth
 from routers.faqs_router import main as faqs
 from routers.t_c_router import main as t_c
@@ -114,12 +114,11 @@ api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
 api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
-# api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
+api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
 # api.include_router(events.router,prefix="/api/events",tags=["events"])
 # api.include_router(order.router,prefix="/api/orders",tags=["orders"])
-# api.include_router(users.router,prefix="/api/users",tags=["user"])
-# api.include_router(users.router,prefix="/api/users",tags=["user"])
+api.include_router(users.router,prefix="/api/users",tags=["user"])
 api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
 
 # from dotenv import load_dotenv

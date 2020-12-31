@@ -1,36 +1,31 @@
-from typing import List, Optional
+from ..users_router.schemas import User
 from pydantic import BaseModel
-
+from typing import Optional
 import datetime
 
-from ..users_router.schemas import User
-
-class ReviewsBase(BaseModel):
-    title: str
-    metatitle: Optional[str] = None
-    description: Optional[str] = None
+class ReviewBase(BaseModel):
+    title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
     ratings: float
 
-
-class ReviewsCreate(ReviewsBase):
+class CreateReview(ReviewBase):
     pass
 
-class ReviewsUpdate(BaseModel):
-    title: Optional[str] = None
-    metatitle: Optional[str]  = None
-    description: Optional[str] = None
-    ratings: Optional[float] = None
+class UpdateReview(BaseModel):
+    title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+    ratings: Optional[float]
 
-class Reviews(ReviewsBase):
+class Review(ReviewBase):
     id: int
     product_id: int
+    author: User
     date_modified: datetime.datetime
     date_created: datetime.datetime
 
-    author: User
-
     class Config:
-        arbitrary_types_allowed = True
         orm_mode = True
-
-   
