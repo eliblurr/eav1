@@ -37,3 +37,5 @@ async def read_subscription_by_id(id: int, db: Session = Depends(get_db)):
     if not subscription:
         raise HTTPException(status_code=404)
     return subscription
+
+# purchase subscription
