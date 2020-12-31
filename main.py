@@ -85,7 +85,7 @@ from routers.reviews_router import main as reviews
 from routers.product_router import main as product
 # from routers.payment_router import main as payment
 # from routers.boards_router import main as boards
-# from routers.events_router import main as events
+from routers.events_router import main as events
 from routers.promo_router import main as promo
 # from routers.order_router import main as order
 from routers.users_router import main as users
@@ -116,7 +116,7 @@ api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
-# api.include_router(events.router,prefix="/api/events",tags=["events"])
+api.include_router(events.router,prefix="/api/events",tags=["events"])
 # api.include_router(order.router,prefix="/api/orders",tags=["orders"])
 api.include_router(users.router,prefix="/api/users",tags=["user"])
 api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])

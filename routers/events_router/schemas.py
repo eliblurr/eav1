@@ -19,6 +19,8 @@ class UpdateEventImage(BaseModel):
 
 class EventImage(EventImageBase):
     id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode=True
@@ -27,29 +29,25 @@ class EventBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
+    status: Optional[bool]
 
 class CreateEvent(EventBase):
 
     @classmethod
-    def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(None) ):
-        return cls(title=title, metatitle=metatitle, description=description)
+    def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(None), status: bool=Form(None)):
+        return cls(title=title, metatitle=metatitle, description=description, status=status)
 
 class UpdateEvent(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
+    status: Optional[bool]
 
 class Event(EventBase):
     id: int
     images: List[EventImage]
     date_created: datetime.datetime
     date_modified: datetime.datetime
-
-    class Config():
-        orm_mode = True
-
-class EventItems(BaseModel):
-    event_items: List[Product]
 
     class Config():
         orm_mode = True

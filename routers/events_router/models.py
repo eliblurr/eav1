@@ -11,10 +11,9 @@ class Events(Base):
     title = Column(String, nullable=False, unique=True)
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    status = Column(Boolean, nullable = False, default = True)
+    status = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
     images = relationship('EventImages', backref="event", uselist=True, cascade="all, delete")
     event_items = relationship('Products', secondary='event_items', backref=backref('events', lazy='dynamic'), lazy='dynamic')
 
@@ -31,3 +30,5 @@ class EventImages(Base):
     event_id = Column(Integer, ForeignKey('events.id'))
     image_url = Column(String, nullable=True)
     folder_name = Column(String, nullable=True)
+    date_created = Column(DateTime,  default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

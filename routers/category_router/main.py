@@ -47,6 +47,6 @@ async def delete_category(id: int, db: Session=Depends(get_db)):
 async def remove_category_image(id: int, db:Session=Depends(get_db)):
     return await crud.remove_category_image(id, db)
 
-@router.delete("/products/{id}", description="remove product from category", status_code=status.HTTP_202_ACCEPTED)
+@router.delete("/{id}/products", description="remove product from category", status_code=status.HTTP_202_ACCEPTED)
 async def remove_product_from_category(id: int, payload: List[int], db: Session = Depends(get_db)):
     return await crud.remove_product_from_category(id, payload, db)

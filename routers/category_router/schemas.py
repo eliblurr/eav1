@@ -51,5 +51,3 @@ class Category(CategoryBase):
 
     class Config():
         orm_mode = True
-
-# category_items
