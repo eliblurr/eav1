@@ -11,7 +11,7 @@ async def create_board(payload: schemas.CreateBoard, db: Session=Depends(get_db)
     return await crud.create_board(payload, db)
 
 @router.get("/users/{id}", description="read user boards", response_model=List[schemas.Board])
-async def read_boards(id:int, skip: int, limit: int, search:str, value:str, db:Session=Depends(get_db)):
+async def read_boards(id:int, skip:int=0, limit:int=100, search:str=None, value:str=None, db:Session=Depends(get_db)):
     return await crud.read_boards(id, skip, limit, search, value, db)
 
 @router.get("/{id}", description="read board by id", response_model=schemas.Board)
