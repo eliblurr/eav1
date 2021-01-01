@@ -33,6 +33,7 @@ class OrderBill(Base):
     __tablename__ = "order_bill"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    total = Column(Float, nullable=False)
     status = Column(Boolean, default=True, nullable=False)
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
@@ -45,12 +46,20 @@ class OrderItems(Base):
     __tablename__ = "order_items"
 
     order_id = Column(Integer, ForeignKey('orders.id'),primary_key = True)
-    item_id = Column(Integer, ForeignKey('products.id'),primary_key = True)
+    product_id = Column(Integer, ForeignKey('products.id'),primary_key = True)
     quantity = Column(Integer, nullable=False)
-    unit_price = Column(Float, nullable=False)    
+    unit_price = Column(Float, nullable=False) 
+    sub_total = Column(Float, nullable=False) 
+    purchase_type_id = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=True)
-    # purchase type
-    # duration
+
+
+# purchase_type =
+# duration = Column(Integer, nullable=True)
+
+# duration = Column(Integer, nullable=True)
+# purchase type
+# duration
 
 # # rental
 # # purchase
@@ -60,11 +69,11 @@ class OrderItems(Base):
 # order_delivery
 # order_delivery_timeline
 # order_payment
+# order owner
 
 
 # order_timeline = relationship('OrderTimeline', backref="order", uselist=True, cascade="all, delete",lazy='dynamic')
 
-# order owner
 
 # class OrderTimeline(Base):
 #     __tablename__ = "order_timeline"

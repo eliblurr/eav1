@@ -1,27 +1,62 @@
+from ..timeline_router.schemas import Timeline
 from typing import Optional, List
 from pydantic import BaseModel
+import datetime
 
-class DeliveryBase(BaseModel):
+class DeliveryOptionBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
-    duration: int
-    price: float
-    status: bool
+    status: Optional[bool]
 
-class DeliveryCreate(DeliveryBase):
+class CreateDeliveryOption(DeliveryOptionBase):
     pass
 
-class DeliveryUpdate(BaseModel):
+class UpdateDeliveryOption(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
-    duration: Optional[int]
-    price: Optional[float]
     status: Optional[bool]
 
-class Delivery(DeliveryBase):
+class DeliveryOption(DeliveryOptionBase):
     id: int
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode=True
+
+class DeliveryBase(BaseModel):
+    pass
+
+class CreateDelivery(DeliveryBase):
+    pass
+
+class UpdateDelivery(BaseModel):
+    pass
+
+class Delivery(DeliveryBase):
+    pass
+
+    class Config:
+        orm_mode=True
+
+class CreateDeliveryTimeline(BaseModel):
+    title: str
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+    index: int
+
+class DeliveryTimeline(BaseModel):
+    id: Optional[int]
+    title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+    delivery_timeline: Optional[Timeline]
 
     class Config:
         orm_mode=True
