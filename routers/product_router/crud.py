@@ -82,9 +82,8 @@ async def read_products(skip, limit, search, value, location_id, db: Session):
     base = db.query(models.Products)
     if location_id:
         location = await read_location_by_id(location_id, db)
-        if location is None:
-            base = db.query(models.Products)
-        base = location.location_items
+        if location is not None:
+            base = location.location_items
     if search and value:
         try:
             base = base.filter(models.Products.__table__.c[search].like("%" + value + "%"))
@@ -135,6 +134,8 @@ async def delete_product(id: int, db: Session):
     try:
         product = await read_product_by_id(id, db)
         if product:
+            if len(product.images):
+                await utils.delete_folder(product_DIR+"/"+product.images[0].folder_name)
             db.delete(product)
         db.commit()
         return True

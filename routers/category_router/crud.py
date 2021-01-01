@@ -77,8 +77,9 @@ async def update_category(id: int, payload: schemas.UpdateCategory, db: Session)
 async def delete_category(id: int, db: Session):
     try:
         category = await read_category_by_id(id, db)
-        if category and len(category.images):
-            await utils.delete_folder(category_DIR+"/"+category.images[0].folder_name)
+        if category:
+            if len(category.images):
+                await utils.delete_folder(category_DIR+"/"+category.images[0].folder_name)
             db.delete(category)
         db.commit()
         return True

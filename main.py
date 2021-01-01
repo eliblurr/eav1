@@ -29,6 +29,7 @@ from routers.users_router import models
 from routers.faqs_router import models
 from routers.auth_router import models
 from routers.t_c_router import models
+from routers.ad_router import models
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -92,6 +93,7 @@ from routers.users_router import main as users
 # from routers.auth_router import main as auth
 from routers.faqs_router import main as faqs
 from routers.t_c_router import main as t_c
+from routers.ad_router import main as ad
 
 api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
@@ -120,6 +122,7 @@ api.include_router(events.router,prefix="/api/events",tags=["events"])
 # api.include_router(order.router,prefix="/api/orders",tags=["orders"])
 api.include_router(users.router,prefix="/api/users",tags=["user"])
 api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
+api.include_router(ad.router, prefix="/api/ads",tags=["ads"])
 
 # from dotenv import load_dotenv
 # load_dotenv()

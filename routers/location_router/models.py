@@ -1,8 +1,8 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
 from ..product_router.models import Products
-from ..product_router.models import Products
 from database import Base, SessionLocal
+from ..ad_router.models import Ads
 import datetime
 
 class Country(Base):
@@ -35,9 +35,16 @@ class Location(Base):
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     sub_country_id = Column(Integer, ForeignKey('sub_countries.id'))
     location_items = relationship('Products', secondary='location_items', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
+    location_ads = relationship('Ads', secondary='location_ads', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
 
 class LocationItems(Base):
     __tablename__ = "location_items"
 
     location_id = Column(Integer, ForeignKey('locations.id'),primary_key = True)
     product_id = Column(Integer, ForeignKey('products.id'),primary_key = True)
+
+class LocationAds(Base):
+    __tablename__ = "location_ads"
+
+    location_id = Column(Integer, ForeignKey('locations.id'), primary_key=True)
+    ad_id = Column(Integer, ForeignKey('ads.id'), primary_key=True)
