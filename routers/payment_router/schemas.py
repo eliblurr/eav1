@@ -42,20 +42,3 @@ class Payment(PaymentBase):
     
     class Config:
         orm_mode=True
-
-
-
-
-
-
-
-card = Card(
-    name='Georg Wilhelm Friedrich Hegel',
-    number='4000000000000002',
-    exp=datetime.date(2023, 9, 30),
-)
-
-assert card.number.brand == PaymentCardBrand.visa
-assert card.number.bin == '400000'
-assert card.number.last4 == '0002'
-assert card.number.masked == '400000******0002'
