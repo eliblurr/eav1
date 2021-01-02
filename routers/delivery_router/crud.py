@@ -1,4 +1,5 @@
 from ..location_router.crud import read_location_by_id
+from ..timeline_router.crud import read_timeline_by_id
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
@@ -123,13 +124,15 @@ async def delete_delivery(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def CreateDeliveryTimeline(id:int, payload:schemas.CreateDeliveryTimeline, db:Session):
+async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimeline, db:Session):
     delivery = await read_delivery_by_id(id, db)
     if not delivery:
         raise HTTPException(status_code=404)
     try:
-        delivery_timeline = models.DeliveryTimeline(**payload.dict(), delivery_id=id)
+        delivery_timeline = models.DeliveryTimeline(**payload.dict())
         db.add(delivery_timeline) 
+        db.flush()
+        delivery.delivery_timeline.append(delivery_timeline)
         db.commit()   
         db.refresh(delivery_timeline)     
         return delivery_timeline
@@ -142,40 +145,35 @@ async def CreateDeliveryTimeline(id:int, payload:schemas.CreateDeliveryTimeline,
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def add_timeline_to_delivery(id:int, timeline_id:int, db:Session):
+async def toggle_timeline_delivery(id:int, timeline_id:int, db:Session):
     delivery = await read_delivery_by_id(id, db)
-    if not delivery:
-        raise HTTPException(status_code=404)
-    # product = await read_product_by_id(id, db)  
-    # if not product:
-    #     raise HTTPException(status_code=404)
-    # try:
-    #     urls, folder_name = await image_folder_io.append_image(product, images, 700, 500)
-    #     if urls and folder_name:
-    #         for url in urls:
-    #             url = models.ProductImages(image_url=url, folder_name=folder_name)
-    #             product.images.append(url)
-    #     db.commit()
-    #     db.refresh(product)
-    #     return product
-    # except:      
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=500)
+    timeline = await read_timeline_by_id(timeline_id, db)
+    res = (delivery is not None, timeline is not None)
+    if all(res):
+        pass
+    except:
+        raise HTTPException(status_code=404, detail="{} not found".format('delivery' if not(res[0]) else 'timeline'))
+    try:
+        if timeline not in delivery.delivery_timeline:
+            delivery.delivery_timeline.append(timeline)
+            state = 'added'
+        else:
+            delivery.delivery_timeline.remove(timeline)
+            state = 'removed'
+        db.commit()
+        db.refresh(delivery)
+        return True, state
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:      
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def remove_timeline_from_delivery(id:int, timeline_id:int, db:Session):
+async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     delivery = await read_delivery_by_id(id, db)
     if not delivery:
         raise HTTPException(status_code=404)
-    # product_image = db.query(models.ProductImages).filter(models.ProductImages.id == id).first()
-    # try: 
-    #     if product_image:
-    #         _ , folder_name, image_name = product_image.image_url.split("/")
-    #         if await utils.file_exists(product_DIR+"/"+folder_name+"/"+image_name) and await utils.delete_file(product_DIR+"/"+folder_name+"/"+image_name):
-    #             db.delete(product_image)
-    #     db.commit()
-    #     return True
-    # except:
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=500)
+    return delivery.delivery_timeline.offset(skip).limit(limit).all()
