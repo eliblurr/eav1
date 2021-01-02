@@ -1,4 +1,4 @@
-from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.orm import relationship, backref
 from ..delivery_router.models import Delivery
 from ..payment_router.models import Payment

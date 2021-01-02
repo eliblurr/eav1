@@ -13,5 +13,5 @@ from . import models, schemas
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from ..product_router.crud import read_products_by_id
+from ..product_router.crud import read_product_by_id
 

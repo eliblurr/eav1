@@ -30,7 +30,7 @@ async def delete_delivery_option(id:int, db:Session=Depends(get_db)):
     return await crud.delete_delivery_option(id, db)
 
 @router.post("/", description="create delivery", status_code=status.HTTP_201_CREATED, response_model=schemas.Delivery)
-async def create_delivery(payload:CreateDelivery, db:Session=Depends(get_db)):
+async def create_delivery(payload:schemas.CreateDelivery, db:Session=Depends(get_db)):
     return await crud.create_delivery(payload, db)
 
 @router.get("/", description="read delivery", response_model=List[schemas.Delivery])
@@ -45,7 +45,7 @@ async def read_delivery_by_id(id:int, db:Session=Depends(get_db)):
     return delivery
 
 @router.patch("/{id}", description="update delivery details", response_model=schemas.Delivery, status_code=status.HTTP_202_ACCEPTED)
-async def update_delivery(id:int, payload:UpdateDelivery, db:Session=Depends(get_db)):
+async def update_delivery(id:int, payload:schemas.UpdateDelivery, db:Session=Depends(get_db)):
     return await crud.update_delivery(id, payload, db)
 
 @router.delete("/{id}", description="delete delivery", status_code=status.HTTP_202_ACCEPTED)

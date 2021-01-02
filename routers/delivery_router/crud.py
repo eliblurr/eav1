@@ -67,7 +67,7 @@ async def delete_delivery_option(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def create_delivery(payload:CreateDelivery, db:Session):
+async def create_delivery(payload:schemas.CreateDelivery, db:Session):
     try:
         delivery = models.Delivery(**payload.dict())
         db.add(delivery) 
@@ -95,7 +95,7 @@ async def read_delivery(skip:int, limit:int, search:str, value:str, db:Session):
 async def read_delivery_by_id(id:int, db:Session):
     return db.query(models.Delivery).filter(models.Delivery.id==id).first()
 
-async def update_delivery(id:int, payload:UpdateDelivery, db:Session):
+async def update_delivery(id:int, payload:schemas.UpdateDelivery, db:Session):
     if not await read_delivery_by_id(id, db):
         raise HTTPException(status_code=404)
     try:
@@ -151,7 +151,7 @@ async def toggle_timeline_delivery(id:int, timeline_id:int, db:Session):
     res = (delivery is not None, timeline is not None)
     if all(res):
         pass
-    except:
+    else:
         raise HTTPException(status_code=404, detail="{} not found".format('delivery' if not(res[0]) else 'timeline'))
     try:
         if timeline not in delivery.delivery_timeline:
