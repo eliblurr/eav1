@@ -38,7 +38,7 @@ class OrderBill(Base):
     customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     payment_id = Column(Integer, ForeignKey("payments.id"), nullable=False)
-    payment = relationship('Payment', backref="bill", uselist=False, cascade="all, delete", lazy='dynamic')
+    payment = relationship('Payment', backref="bill", uselist=False, cascade="all, delete")
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 

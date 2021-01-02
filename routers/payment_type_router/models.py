@@ -19,6 +19,6 @@ class PaymentType(Base):
 @event.listens_for(PaymentType.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
     db = SessionLocal()
-    db.add_all([ PaymentType(title='Visa'), PaymentType(title='MasterCard'), PaymentType(title='Paypal') ])
+    db.add_all([ PaymentType(title='Card'), PaymentType(title='Paypal') ])
     db.commit()
 

@@ -1,30 +1,37 @@
 from ..payment_type_router.crud import read_payment_type_by_id
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
 from sqlalchemy import and_
+from sqlalchemy import exc
 import sys
 
-async def create_payment(payload: schemas.CreatePayment, db: Session):
+# create
+# read and filter
+# read by id
+# update
+# delete
 
-    if payload.payment_type_id and not await read_payment_type_by_id(payload.payment_type_id, db):
-        raise HTTPException(status_code=404, detail="selected payment type with id {} does not exist".format(payload.payment_type_id))
-    
+async def create_payment(payload: schemas.CreatePayment, db: Session):
+    if await read_payment_type_by_id(payload.payment_type_id, db) is None:
+        raise HTTPException(status_code=404)  
     try:  
-        new_payment = models.Payment(**payload.dict())
-        db.add(new_payment)
-        db.commit()
-        db.refresh(new_payment) 
-        return new_payment
-    except IntegrityError:
+        pass
+        # new_payment = models.Payment(**payload.dict())
+        # db.add(new_payment)
+        # db.commit()
+        # db.refresh(new_payment) 
+        # return new_payment
+    except exc.IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail="user with email {} already exists".format(payload.email))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
-async def read_payment(skip: int, limit: int, search: str, value:str, db: Session):
+async def read_payment(skip: int, limit: int, search: str, value:str, start_amount:float, end_amount:float, db: Session):
     try:
         base = db.query(models.Payment)
         if search and value:
@@ -37,7 +44,7 @@ async def read_payment(skip: int, limit: int, search: str, value:str, db: Sessio
         raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]) )
 
 async def read_payment_by_id(id: int, db: Session):
-    return db.query(models.Payment).filter(models.Payment.id == id).first()
+    return db.query(models.Payment).filter(models.Payment.id==id).first()
 
 async def filter_payment(skip: int, limit: int, lower_boundary: float, upper_boundary:float, db: Session):
     try:
@@ -62,18 +69,23 @@ async def delete_payment(id: int, db: Session):
             db.commit()
         return True
     except:
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def update_payment(id: int, payload: schemas.UpdatePayment, db: Session):
     if not await read_payment_by_id(id, db):
-        raise HTTPException(status_code=404, detail="payment not found")
+        raise HTTPException(status_code=404)
     try:
-        payment = db.query(models.Payment).filter(models.Payment.id == id).update(payload.dict(exclude_unset=True).items())
+        updated = db.query(models.Payment).filter(models.Payment.id == id).update(payload.dict(exclude_unset=True).items())
         db.commit()
-        return await read_payment_by_id(id, db)
-    except IntegrityError:
+        if updated:
+            return await read_payment_by_id(id, db)
+    except exc.IntegrityError:
         db.rollback()
-        raise HTTPException(status_code=409, detail = "unique constraint failed on index")
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
-        raise HTTPException(status_code=500, detail="{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
