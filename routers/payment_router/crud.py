@@ -6,6 +6,8 @@ from sqlalchemy import and_
 from sqlalchemy import exc
 import sys
 
+# exists = db.session.query(db.exists().where(User.name == 'davidism')).scalar()
+
 async def create_payment(payload: schemas.CreatePayment, db: Session):
     if await read_payment_type_by_id(payload.payment_type_id, db) is None:
         raise HTTPException(status_code=404) 

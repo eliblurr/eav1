@@ -92,7 +92,7 @@ from routers.events_router import main as events
 from routers.promo_router import main as promo
 from routers.order_router import main as order
 from routers.users_router import main as users
-# from routers.auth_router import main as auth
+from routers.auth_router import main as auth
 from routers.faqs_router import main as faqs
 from routers.t_c_router import main as t_c
 from routers.ad_router import main as ad
@@ -104,7 +104,7 @@ api.include_router(payment_type.router,prefix="/api/payment_type",tags=["payment
 api.include_router(location.router3,prefix="/api/sub_countries",tags=["sub countries"])
 api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_unit"])
 api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
-# api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
+api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
 api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 api.include_router(location.router2,prefix="/api/countries",tags=["countries"])
 api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
