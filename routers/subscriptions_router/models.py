@@ -25,7 +25,7 @@ class SubscriptionType(Base):
     metatitle = Column(String, nullable=True)
     description = Column(String, nullable=True)
     status = Column(Boolean, nullable=False, default=True)
-    duration = Column(Integer, nullable=False)
+    duration = Column(Integer, nullable=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     subscriptions = relationship('Subscriptions', backref="subscription_type", uselist=True, lazy="dynamic")

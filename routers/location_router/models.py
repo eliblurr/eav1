@@ -1,6 +1,6 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
-from ..delivery_router.models import Delivery
+from ..delivery_router.models import DeliveryOption
 from ..product_router.models import Products
 from database import Base, SessionLocal
 from ..ad_router.models import Ads
@@ -37,7 +37,7 @@ class Location(Base):
     sub_country_id = Column(Integer, ForeignKey('sub_countries.id'))
     location_items = relationship('Products', secondary='location_items', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
     location_ads = relationship('Ads', secondary='location_ads', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
-    loction_delivery_options = relationship('Delivery', secondary='loction_delivery_options', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
+    loction_delivery_options = relationship('DeliveryOption', secondary='loction_delivery_options', backref=backref('locations', lazy='dynamic'), lazy='dynamic')
 
 class LocationItems(Base):
     __tablename__ = "location_items"

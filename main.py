@@ -25,11 +25,13 @@ from routers.timeline_router import models
 from routers.reviews_router import models
 from routers.payment_router import models
 from routers.events_router import models
+from routers.order_router import models
 from routers.users_router import models
 from routers.faqs_router import models
 from routers.auth_router import models
 from routers.t_c_router import models
 from routers.ad_router import models
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -84,7 +86,7 @@ from routers.category_router import main as category
 from routers.timeline_router import main as timeline
 from routers.reviews_router import main as reviews
 from routers.product_router import main as product
-# from routers.payment_router import main as payment
+from routers.payment_router import main as payment
 from routers.boards_router import main as boards
 from routers.events_router import main as events
 from routers.promo_router import main as promo
@@ -115,7 +117,7 @@ api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
 api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
 api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
 api.include_router(product.router,prefix="/api/products",tags=["product"])
-# api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
+api.include_router(payment.router,prefix="/api/payment",tags=["payment"])
 api.include_router(reviews.router,prefix="/api/reviews",tags=["reviews"])
 api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
 api.include_router(events.router,prefix="/api/events",tags=["events"])
