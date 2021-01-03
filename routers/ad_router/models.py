@@ -33,4 +33,7 @@ class Styles(Base):
     background_color = Column(String, nullable=True)
     text_color = Column(String, nullable=True)
     fontWeight = Column(Integer, nullable=True)
+    status = Column(Boolean, nullable=False, default=True)
     ads = relationship('Ads', backref="style", uselist=True, lazy="dynamic")
+    date_created = Column(DateTime,  default=datetime.datetime.utcnow)
+    date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

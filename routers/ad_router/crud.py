@@ -6,24 +6,35 @@ from static.main import ad_DIR
 from . import models, schemas
 from sqlalchemy import exc
 from typing import List
-import sys
+import sys, pydantic
 
 folder_io = FolderIO(ad_DIR)
 image_folder_io = ImageFolderIO(ad_DIR, 15, folder_io, 'ads')
 
 async def create_ad(payload:schemas.CreateAd, images, db: Session):
+    if payload.style_id and await read_style_by_id(payload.style_id, db) is None:
+        raise HTTPException(status_code=404, detail="style not found")
     try:
-        new_ad = models.Ads(**payload.dict())
-        db.add(new_ad) 
-        db.flush()
-        if len(images):
-            urls, folder_name = await image_folder_io.create(images, 700, 500)
-            for url in urls:
-                url = models.AdImages(image_url=url, folder_name=folder_name)
-                new_ad.images.append(url)
-        db.commit()
-        db.refresh(new_ad)
-        return new_ad
+        pass
+        # if len(payload.location_ids):
+            # print(payload.location_ids)
+        # if payload.style_id:
+        
+        # title=title, metatitle=metatitle, description=description, status=status, 
+        # style_id=style_id, 
+        # location_ids=location_ids
+        
+        # new_ad = models.Ads(**payload.dict())
+        # db.add(new_ad) 
+        # db.flush()
+        # 
+        #     urls, folder_name = await image_folder_io.create(images, 700, 500)
+        #     for url in urls:
+        #         url = models.AdImages(image_url=url, folder_name=folder_name)
+        #         new_ad.images.append(url)
+        # db.commit()
+        # db.refresh(new_ad)
+        # return new_ad
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
@@ -105,6 +116,75 @@ async def remove_image_ad(id:int, db:Session):
             _ , folder_name, image_name = ad_image.image_url.split("/")
             if await utils.file_exists(ad_DIR+"/"+folder_name+"/"+image_name) and await utils.delete_file(ad_DIR+"/"+folder_name+"/"+image_name):
                 db.delete(ad_image)
+        db.commit()
+        return True
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def create_style(payload, db:Session):
+    if not bool(payload.dict(exclude_unset=True)):
+        raise HTTPException(status_code=422)
+    payload_cp = payload.dict(exclude_unset=True).copy()
+    for k,v in payload_cp.items():
+        if isinstance(v,pydantic.color.Color):
+            pass
+            payload_cp[k] = v.__str__()
+    try:
+        new_style = models.Styles(**payload_cp)
+        db.add(new_style) 
+        db.commit()
+        db.refresh(new_style)
+        return new_style
+    except exc.IntegrityError:
+        db.rollback()      
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def read_styles(skip:int, limit:int, search:str, value:str, db:Session):
+    base = db.query(models.Styles)
+    if search and value:
+        try:
+            base = base.filter(models.Styles.__table__.c[search].like("%" + value + "%"))
+        except KeyError:
+            return base.offset(skip).limit(limit).all()
+    return base.offset(skip).limit(limit).all()
+
+async def read_style_by_id(id:int, db:Session):
+    return db.query(models.Styles).filter(models.Styles.id==id).first()
+
+async def update_style(id:int, payload:schemas.UpdateStyle, db:Session):
+    if not await read_style_by_id(id, db):
+        raise HTTPException(status_code=404)
+    payload_cp = payload.dict(exclude_unset=True).copy()
+    for k,v in payload_cp.items():
+        if isinstance(v,pydantic.color.Color):
+            pass
+            payload_cp[k] = v.__str__()
+    try:
+        updated = db.query(models.Styles).filter(models.Styles.id==id).update(payload_cp)
+        db.commit()
+        if bool(updated):
+            return await read_style_by_id(id, db)
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def delete_style(id:int, db:Session):
+    try:
+        style = await read_style_by_id(id, db)
+        if style:
+            db.delete(style)
         db.commit()
         return True
     except:

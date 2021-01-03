@@ -5,6 +5,7 @@ from typing import List
 from main import get_db
 
 router = APIRouter()
+router2 = APIRouter()
 
 @router.post("/", description="create ad", status_code=status.HTTP_201_CREATED, response_model=schemas.Ad)
 async def create_ad(payload=Depends(schemas.CreateAd.as_form), images:List[UploadFile]=File(None), db:Session=Depends(get_db)):
@@ -36,3 +37,34 @@ async def add_image_ad(id:int, images:List[UploadFile]=File(...), db:Session=Dep
 @router.delete("/{id}/images", description="remove ad image", status_code=status.HTTP_202_ACCEPTED)
 async def remove_image_ad(id:int, db:Session=Depends(get_db)):
     return await crud.remove_image_ad(id, db)
+
+@router2.post("/", description="create ad style", status_code=status.HTTP_201_CREATED, response_model=schemas.Style)
+async def create_style(payload:schemas.CreateStyle, db:Session=Depends(get_db)):
+    return await crud.create_style(payload, db)
+
+@router2.get("/", description="read ad styles", response_model=List[schemas.Style])
+async def read_styles(skip:int=0, limit:int=100, search:str=None, value:str=None, db:Session=Depends(get_db)):
+    return await crud.read_styles(skip, limit, search, value, db)
+
+@router2.get("/{id}", description="read ad style by id", response_model=schemas.Style)
+async def read_style_by_id(id:int, db:Session=Depends(get_db)):
+    style = await crud.read_style_by_id(id, db)
+    if not style:
+        raise HTTPException(status_code=404)
+    return style
+
+@router2.patch("/{id}", description="update ad style", response_model=schemas.Style, status_code=status.HTTP_202_ACCEPTED)
+async def update_style(id:int, payload:schemas.UpdateStyle, db:Session=Depends(get_db)):
+    return await crud.update_style(id, payload, db)
+
+@router2.delete("/{id}", description="delete ad style", status_code=status.HTTP_202_ACCEPTED)
+async def delete_style(id:int, db:Session=Depends(get_db)):
+    return await crud.delete_style(id, db)
+
+from fastapi import FastAPI, Form
+from typing import Optional, List
+
+@router.post("/login/")
+async def login(username:List[int]=Form([])):
+    print(username)
+    return username
