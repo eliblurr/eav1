@@ -4,16 +4,26 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from static.main import ad_DIR
 from . import models, schemas
+import sys, pydantic, utils
 from sqlalchemy import exc
 from typing import List
-import sys, pydantic
 
 folder_io = FolderIO(ad_DIR)
 image_folder_io = ImageFolderIO(ad_DIR, 15, folder_io, 'ads')
 
 async def create_ad(payload:schemas.CreateAd, images, db: Session):
+    # if not (payload.title and payload.metatitle and payload.description and images):
+    #     raise HTTPException(status_code=422)
+
     if payload.style_id and await read_style_by_id(payload.style_id, db) is None:
         raise HTTPException(status_code=404, detail="style not found")
+    
+    
+
+    payload_cp = payload.dict(exclude_unset=True).copy()
+    del payload_cp['location_ids']
+    print(payload_cp)
+
     try:
         pass
         # if len(payload.location_ids):
@@ -24,17 +34,25 @@ async def create_ad(payload:schemas.CreateAd, images, db: Session):
         # style_id=style_id, 
         # location_ids=location_ids
         
-        # new_ad = models.Ads(**payload.dict())
-        # db.add(new_ad) 
-        # db.flush()
+        new_ad = models.Ads(**payload_cp)
+        db.add(new_ad) 
+        db.flush()
+        if len(payload.location_ids):
+            location_ids = await utils.string_list_to_int_list(payload.location_ids[0].split(","))
+            if len(location_ids):
+                location = await read_location_by_id(id, db)
+                if location:
+                    new_ad.locations.append(location)
+
+            # print(location_ids)
         # 
         #     urls, folder_name = await image_folder_io.create(images, 700, 500)
         #     for url in urls:
         #         url = models.AdImages(image_url=url, folder_name=folder_name)
-        #         new_ad.images.append(url)
-        # db.commit()
-        # db.refresh(new_ad)
-        # return new_ad
+        #         
+        db.commit()
+        db.refresh(new_ad)
+        return new_ad
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))

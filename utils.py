@@ -111,3 +111,10 @@ async def len_of_dir_children(dir_path):
 
 def logical_xor(str1, str2):
     return bool(str1) ^ bool(str2)
+
+async def string_list_to_int_list(str_list:list):
+    int_list = []
+    for item in str_list:
+        if item.isdigit():
+            int_list.append(int(item))
+    return int_list

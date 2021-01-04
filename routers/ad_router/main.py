@@ -62,9 +62,24 @@ async def delete_style(id:int, db:Session=Depends(get_db)):
     return await crud.delete_style(id, db)
 
 from fastapi import FastAPI, Form
-from typing import Optional, List
+from typing import Optional, List, Set
+import utils
 
 @router.post("/login/")
-async def login(username:List[int]=Form([])):
-    print(username)
-    return username
+async def login(location_ids: List[str] = Form([])):
+    int_list = await utils.string_list_to_int_list(location_ids[0].split(","))
+    print(int_list)
+    # print(type(int_list[0]))
+    # value = 
+    # for i in range(len(value)):
+    #     if value[i].isdigit():
+    #         print(value[i])
+    # for v in value:
+        # if v.isdigit():
+            # pr
+
+    # print(is_int('s'))
+    # print('ew23'.isdigit())
+    # print(value[0].())
+    # print(location_ids)
+    # return location_ids

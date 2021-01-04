@@ -52,10 +52,10 @@ class AdBase(BaseModel):
 
 class CreateAd(BaseModel):
     style_id:Optional[int]
-    location_ids:List[int]
+    location_ids:List[str]
 
     @classmethod
-    def as_form(cls, title: str = Form(None), metatitle: str = Form(None), description: str = Form(None), status: bool=Form(None), style_id:int=Form(None), location_ids:List[int]=Form([])):
+    def as_form(cls, title: str = Form(None), metatitle: str = Form(None), description: str = Form(None), status: bool=Form(None), style_id:int=Form(None), location_ids:List[str]=Form([])):
         return cls(title=title, metatitle=metatitle, description=description, status=status, style_id=style_id, location_ids=location_ids)
 
 class UpdateAd(BaseModel):
