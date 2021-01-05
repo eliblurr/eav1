@@ -5,6 +5,9 @@ from . import models, schemas
 from sqlalchemy import exc
 import sys
 
+async def preview_order():
+    pass
+
 async def create_order():
     pass
 

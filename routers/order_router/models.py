@@ -37,7 +37,7 @@ class OrderBill(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     total = Column(Float, nullable=False)
     status = Column(Boolean, default=True, nullable=False)
-    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    # customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     payment_id = Column(Integer, ForeignKey("payments.id"), nullable=False)
     payment = relationship('Payment', backref="bill", uselist=False, cascade="all, delete")

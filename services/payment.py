@@ -31,6 +31,7 @@ def create_payment(order_amount:float):
         # return jsonify({
         #   'clientSecret': intent['client_secret']
         # })
+        return True
     except Exception as e:
         return jsonify(error=str(e)), 403
 

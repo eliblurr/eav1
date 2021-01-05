@@ -1,4 +1,6 @@
-from ..product_router import schemas as product
+from ..delivery_router.schemas import Delivery
+from ..product_router.schemas import Product
+from ..payment_router.schemas import Payment
 from typing import Optional, List
 from pydantic import BaseModel
 import datetime
@@ -26,14 +28,74 @@ class OrderState(OrderStateBase):
     class Config:
         orm_mode=True
 
+class CreateOrderItem(BaseModel):
+    product_id: int
+    quantity: int
+    purchase_type_id: int
+    duration: Optional[int]
+    sub_total: Optional[int]
+
+    class Config:
+        orm_mode=True
+
+class OrderBillBase(BaseModel):
+    total: float
+    status: Optional[bool]
+
+class CreateOrderBill(OrderBillBase):
+    order_id: int
+    payment_id: int
+
+class UpdateOrderBase(BaseModel):
+    order_id: Optional[int]
+    payment_id: Optional[int]
+
+class OrderBill(OrderBillBase):
+    id: int
+    payment: Payment 
+    date_created: datetime.datetime
+    date_modified: datetime.DateTime
+
+    class Config:
+        orm_mode=True
+
 class OrderBase(BaseModel):
-    pass
+    status: Optional[bool]
 
 class CreateOrder(OrderBase):
-    pass
+    order_items: List[CreateOrderItem]
+    order_delivery: int
+    owner_id: int
 
 class UpdateOrder(BaseModel):
-    pass
+    order_state_id: Optional[int]
 
 class Order(OrderBase):
-    pass
+    id: int
+    code: str
+    owner_id: int
+    order_state: OrderState
+    order_bill: OrderBill
+    order_delivery: Delivery
+    order_items: List[Product]
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode=True
+
+class CreatePreviewOrder(BaseModel):
+    order_items: List[CreateOrderItem]
+    # shipping_to: 
+    delivery_option_id: int
+    voucher_id: Optional[int]
+
+class PreviewOrder(CreatePreviewOrder):
+    Total
+    Tax
+    Shipping details
+    Delivery_address
+    payment_method
+    
+    class Config:
+        orm_mode=True
