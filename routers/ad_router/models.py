@@ -14,7 +14,7 @@ class Ads(Base):
     style_id = Column(Integer, ForeignKey('styles.id'), nullable=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    images = relationship('AdImages', backref="ad", uselist=True, cascade="all, delete", lazy="dynamic")
+    images = relationship('AdImages', backref="ad", uselist=True, cascade="all, delete")
     
 class AdImages(Base):
     __tablename__ = "ad_images"

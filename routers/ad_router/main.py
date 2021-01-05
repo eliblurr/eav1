@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from . import crud, schemas, models
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional 
 from main import get_db
 
 router = APIRouter()
@@ -38,6 +38,14 @@ async def add_image_ad(id:int, images:List[UploadFile]=File(...), db:Session=Dep
 async def remove_image_ad(id:int, db:Session=Depends(get_db)):
     return await crud.remove_image_ad(id, db)
 
+@router.put("/{id}/locations", description="add location to ad", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.Ad)
+async def add_location_to_ad(id:int, location_ids:List[int], db:Session=Depends(get_db)):
+    return await crud.add_location_to_ad(id, location_ids, db)
+
+@router.delete("/{id}/locations", description="remove location from ad", status_code=status.HTTP_202_ACCEPTED, response_model=schemas.Ad)
+async def remove_location_from_ad(id:int, location_ids:List[int], db:Session=Depends(get_db)):
+    return await crud.remove_location_from_ad(id, location_ids, db)
+
 @router2.post("/", description="create ad style", status_code=status.HTTP_201_CREATED, response_model=schemas.Style)
 async def create_style(payload:schemas.CreateStyle, db:Session=Depends(get_db)):
     return await crud.create_style(payload, db)
@@ -60,26 +68,3 @@ async def update_style(id:int, payload:schemas.UpdateStyle, db:Session=Depends(g
 @router2.delete("/{id}", description="delete ad style", status_code=status.HTTP_202_ACCEPTED)
 async def delete_style(id:int, db:Session=Depends(get_db)):
     return await crud.delete_style(id, db)
-
-from fastapi import FastAPI, Form
-from typing import Optional, List, Set
-import utils
-
-@router.post("/login/")
-async def login(location_ids: List[str] = Form([])):
-    int_list = await utils.string_list_to_int_list(location_ids[0].split(","))
-    print(int_list)
-    # print(type(int_list[0]))
-    # value = 
-    # for i in range(len(value)):
-    #     if value[i].isdigit():
-    #         print(value[i])
-    # for v in value:
-        # if v.isdigit():
-            # pr
-
-    # print(is_int('s'))
-    # print('ew23'.isdigit())
-    # print(value[0].())
-    # print(location_ids)
-    # return location_ids

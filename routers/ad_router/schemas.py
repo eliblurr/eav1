@@ -50,7 +50,7 @@ class AdBase(BaseModel):
     description: Optional[str]
     status: Optional[bool]
 
-class CreateAd(BaseModel):
+class CreateAd(AdBase):
     style_id:Optional[int]
     location_ids:List[str]
 
@@ -62,14 +62,12 @@ class UpdateAd(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
-    image_url: Optional[str]
-    component_id: Optional[int]
-    ad_style: Optional[int]
-    priority: Optional[int]
+    status: Optional[bool]
+    style_id:Optional[int]
 
 class Ad(AdBase):
     id: int
-    # style: 
+    style: Optional[Style]
     date_created: datetime.datetime
     date_modified: datetime.datetime
 

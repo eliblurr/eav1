@@ -12,44 +12,27 @@ folder_io = FolderIO(ad_DIR)
 image_folder_io = ImageFolderIO(ad_DIR, 15, folder_io, 'ads')
 
 async def create_ad(payload:schemas.CreateAd, images, db: Session):
-    # if not (payload.title and payload.metatitle and payload.description and images):
-    #     raise HTTPException(status_code=422)
-
+    payload_cp = {k:v for (k,v) in payload.dict().items() if v is not None}
+    del payload_cp['location_ids']
+    if not bool(payload_cp) and not images:
+        raise HTTPException(status_code=422)
     if payload.style_id and await read_style_by_id(payload.style_id, db) is None:
         raise HTTPException(status_code=404, detail="style not found")
-    
-    
-
-    payload_cp = payload.dict(exclude_unset=True).copy()
-    del payload_cp['location_ids']
-    print(payload_cp)
-
     try:
-        pass
-        # if len(payload.location_ids):
-            # print(payload.location_ids)
-        # if payload.style_id:
-        
-        # title=title, metatitle=metatitle, description=description, status=status, 
-        # style_id=style_id, 
-        # location_ids=location_ids
-        
         new_ad = models.Ads(**payload_cp)
         db.add(new_ad) 
-        db.flush()
-        if len(payload.location_ids):
+        db.flush() 
+        if isinstance(images, list):
+            urls, folder_name = await image_folder_io.create(images, 700, 500)
+            for url in urls:
+                url = models.AdImages(image_url=url, folder_name=folder_name)
+                new_ad.images.append(url)
+        if payload.location_ids:
             location_ids = await utils.string_list_to_int_list(payload.location_ids[0].split(","))
-            if len(location_ids):
+            for id in location_ids:
                 location = await read_location_by_id(id, db)
                 if location:
                     new_ad.locations.append(location)
-
-            # print(location_ids)
-        # 
-        #     urls, folder_name = await image_folder_io.create(images, 700, 500)
-        #     for url in urls:
-        #         url = models.AdImages(image_url=url, folder_name=folder_name)
-        #         
         db.commit()
         db.refresh(new_ad)
         return new_ad
@@ -81,6 +64,8 @@ async def read_ad_by_id(id:int, db:Session):
 async def update_ad(id:int, payload:schemas.UpdateAd, db:Session):
     if not await read_ad_by_id(id, db):
         raise HTTPException(status_code=404)
+    if payload.style_id and await read_style_by_id(payload.style_id, db) is None:
+        raise HTTPException(status_code=404, detail="style not found")
     try:
         updated = db.query(models.Ads).filter(models.Ads.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
@@ -104,6 +89,44 @@ async def delete_ad(id:int, db:Session):
             db.delete(ad)
         db.commit()
         return True
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def add_location_to_ad(id:int, location_ids:List[int], db:Session):
+    ad = await read_ad_by_id(id, db)
+    if not ad:
+        raise HTTPException(status_code=404)
+    try:
+        for id in location_ids:
+            location = await read_location_by_id(id, db)
+            if location:
+                ad.locations.append(location)
+        db.commit()
+        db.refresh(ad)
+        return ad
+    except exc.IntegrityError:
+        db.rollback()      
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def remove_location_from_ad(id:int, location_ids:List[int], db:Session):
+    ad = await read_ad_by_id(id, db)
+    if not ad:
+        raise HTTPException(status_code=404)
+    try:
+        for id in location_ids:
+            location = await read_location_by_id(id, db)
+            if location:
+                ad.locations.remove(location)
+        db.commit()
+        db.refresh(ad)
+        return ad
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
