@@ -105,6 +105,7 @@ api.include_router(location.router3,prefix="/api/sub_countries",tags=["sub count
 api.include_router(weight_unit.router,prefix="/api/weight_unit",tags=["weight_unit"])
 api.include_router(favorites.router,prefix="/api/favorites",tags=["user favorites"])
 api.include_router(auth.router,prefix="/api/authenticate",tags=["authentication"])
+api.include_router(order.router2,prefix="/api/order_states",tags=["order_states"])
 api.include_router(priorities.router,prefix="/api/priorities",tags=["priorities"])
 api.include_router(location.router2,prefix="/api/countries",tags=["countries"])
 api.include_router(t_c.router,prefix="/api/t_c",tags=["terms and conditions"])
@@ -126,6 +127,8 @@ api.include_router(order.router,prefix="/api/orders",tags=["orders"])
 api.include_router(users.router,prefix="/api/users",tags=["user"])
 api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
 api.include_router(ad.router, prefix="/api/ads",tags=["ads"])
+
+
 
 # from dotenv import load_dotenv
 # load_dotenv()

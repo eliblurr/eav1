@@ -1,41 +1,57 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status
+from . import crud, schemas, models
 from sqlalchemy.orm import Session
-from . import crud, schemas,models
-from typing import List, Optional
-from pydantic import UUID4, EmailStr
-import jwt
-from datetime import timedelta
-import sys
+from typing import List
+from main import get_db
 
-from main import get_db, oauth2_scheme
-import utils
+router2 = APIRouter()
 
-access_token_expires = timedelta(minutes=30)
+@router2.post("/", description="create order state", status_code=201, response_model=schemas.OrderState)
+async def create_order_state(payload:schemas.CreateOrderState, db:Session=Depends(get_db)):
+    return await crud.create_order_state(payload, db)
+
+@router2.get("/", description="read order states", response_model=List[schemas.OrderState])
+async def read_order_states(skip:int=0, limit:int=100, search:str=None, value:str=None, db: Session=Depends(get_db)):
+    return await crud.read_order_states(skip, limit, search, value, db)
+
+@router2.get("/{id}", description="read order state by id", response_model=schemas.OrderState)
+async def read_order_state_by_id(id:int, db:Session=Depends(get_db)):
+    order_state = await crud.read_order_state_by_id(id, db)
+    if order_state is None:
+        raise HTTPException(status_code=404)
+    return order_state
+
+@router2.patch("/{id}", description="update order state", response_model=schemas.OrderState, status_code=status.HTTP_202_ACCEPTED)
+async def update_order_state(id:int, payload:schemas.UpdateOrderState, db:Session=Depends(get_db)):
+    return await crud.update_order_state(id, payload, db)
+
+@router2.delete("/{id}", description="delete order by id", status_code=status.HTTP_202_ACCEPTED)
+async def delete_order_state(id:int, db:Session=Depends(get_db)):
+    return await crud.delete_order_state(id, db)
 
 router = APIRouter()
+# @router.post("/", response_model=schemas.Order)
+# async def create_order(payload: schemas.CreateOrder, db: Session = Depends(get_db)):
+#     return payload
 
-@router.post("/", response_model=schemas.Order)
-async def create_order(payload: schemas.CreateOrder, db: Session = Depends(get_db)):
-    return payload
+# @router.get("/", response_model=List[schemas.Order])
+# async def get_order(skip: int=0, limit: int=100, search:str = None, value:str = None, db: Session = Depends(get_db)):
+#     return
 
-@router.get("/", response_model=List[schemas.Order])
-async def get_order(skip: int=0, limit: int=100, search:str = None, value:str = None, db: Session = Depends(get_db)):
-    return
+# @router.get("/{id}", response_model=schemas.Order)
+# async def get_order_by_id(id: int, db: Session = Depends(get_db)):
+#     return
 
-@router.get("/{id}", response_model=schemas.Order)
-async def get_order_by_id(id: int, db: Session = Depends(get_db)):
-    return
+# @router.patch("/{id}", response_model=schemas.Order)
+# async def update_order(id: int, payload: schemas.UpdateOrder, db: Session = Depends(get_db)):
+#     return
 
-@router.patch("/{id}", response_model=schemas.Order)
-async def update_order(id: int, payload: schemas.UpdateOrder, db: Session = Depends(get_db)):
-    return
-
-@router.delete("/{id}")
-async def delete_order():
-    # if not await crud.delete_payment(id, db):
-    #     raise HTTPException( status_code=500)
-    # return Response(status_code=status.HTTP_204_NO_CONTENT)
-    return
+# @router.delete("/{id}")
+# async def delete_order():
+#     # if not await crud.delete_payment(id, db):
+#     #     raise HTTPException( status_code=500)
+#     # return Response(status_code=status.HTTP_204_NO_CONTENT)
+#     return
 
 
 # make order
