@@ -8,7 +8,7 @@ class Delivery(Base):
      __tablename__ = "delivery"
 
      id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-     price = Column(Float, nullable=False) #changeable based on delivery distance and time
+     # price = Column(Float, nullable=False) #changeable based on delivery distance and time
      status = Column(Boolean, default=True, nullable=False)
      order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
      delivery_option_id = Column(Integer, ForeignKey("delivery_options.id"), nullable=False)
@@ -37,6 +37,7 @@ class DeliveryOption(Base):
      metatitle = Column(String, nullable=True)
      description = Column(String, nullable=True)
      duration = Column(Integer, nullable=False)
+     price = Column(Float, nullable=False) #specific for locations
      date_created = Column(DateTime, default=datetime.datetime.utcnow)
      date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
      deliveries = relationship('Delivery', backref='delivery_option', uselist=True, lazy="dynamic")

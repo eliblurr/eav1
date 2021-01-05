@@ -4,7 +4,9 @@ from fastapi import HTTPException
 from . import models, schemas
 from sqlalchemy import asc
 from typing import List
-import sys
+import sys, utils
+
+logger = utils.get_logger()
 
 async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
     try:
@@ -20,8 +22,7 @@ async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
     except:
         db.rollback()
-        # log here
-        print("{}".format(sys.exc_info()))
+        logger.error("{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
         raise HTTPException(status_code=500)
 
 async def update_about_us(id: int, payload: schemas.UpdateAboutUs, db: Session):
@@ -37,8 +38,8 @@ async def update_about_us(id: int, payload: schemas.UpdateAboutUs, db: Session):
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
     except:
         db.rollback()
-        print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500, detail="{}".format(sys.exc_info()))
+        logger.error("{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        raise HTTPException(status_code=500)
 
 async def delete_about_us(ids: List[int], db: Session):
     try:
@@ -50,8 +51,8 @@ async def delete_about_us(ids: List[int], db: Session):
         return True
     except:
         db.rollback()
-        print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500, detail="failed to delete")
+        logger.error("{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
+        raise HTTPException(status_code=500)
 
 async def read_about_us(search:str, value:str, db: Session):
     base = db.query(models.AboutUs)

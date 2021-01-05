@@ -1,5 +1,12 @@
 from pydantic import BaseSettings
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
+
+# settings.py
+SECRET_KEY = os.getenv("EMAIL")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
 
 class Settings(BaseSettings):
     SECRET_KEY : str = os.environ.get('SECRET_KEY') or "secret"
