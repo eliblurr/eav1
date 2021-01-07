@@ -11,12 +11,12 @@ async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Sessi
     return await crud.create_delivery_option(payload, db)
 
 @router.get("_options/", description="read delivery options", response_model=List[schemas.DeliveryOption])
-async def read_delivery_option(skip:int=0, limit:int=100, search:str=None, value:str=None, location_id:int=0, db:Session=Depends(get_db)):
-    return await crud.read_delivery_option(skip, limit, search, value, location_id, db)
+async def read_delivery_option(skip:int=0, limit:int=100, search:str=None, value:str=None, location_id:int=0, total_weight_in_kg:float=0, db:Session=Depends(get_db)):
+    return await crud.read_delivery_option(skip, limit, search, value, location_id, total_weight_in_kg, db)
 
 @router.get("_options/{id}", description="read delivery option by id", response_model=schemas.DeliveryOption)
-async def read_delivery_by_id(id:int, db:Session=Depends(get_db)):
-    delivery_option = await crud.read_delivery_option(id, db)
+async def read_delivery_option_by_id(id:int, db:Session=Depends(get_db)):
+    delivery_option = await crud.read_delivery_option_by_id(id, db)
     if not delivery_option:
         raise HTTPException(status_code=404)
     return delivery_option

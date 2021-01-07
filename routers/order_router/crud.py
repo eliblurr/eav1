@@ -9,6 +9,12 @@ async def preview_order():
     pass
 
 async def create_order():
+    # 1. validate payload
+    # 1. create order bill
+    # 2. make payments
+    # 3. create order
+    # 4. create delivery and add to order
+    # 5. create payment and add to order
     pass
 
 async def read_orders():

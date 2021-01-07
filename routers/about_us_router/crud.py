@@ -6,7 +6,7 @@ from sqlalchemy import asc
 from typing import List
 import sys, utils
 
-logger = utils.get_logger()
+logger = utils.get_exceptions_logger()
 
 async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
     try:
@@ -18,7 +18,7 @@ async def create_about_us(payload: schemas.CreateAboutUs, db:Session):
         return about_us
     except IntegrityError:
         db.rollback()
-        # log here
+        logger.error("{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
     except:
         db.rollback()
@@ -35,6 +35,7 @@ async def update_about_us(id: int, payload: schemas.UpdateAboutUs, db: Session):
             return await read_about_us_by_id(id, db)
     except IntegrityError:
         db.rollback()
+        logger.error("{}: {}".format(sys.exc_info()[0], sys.exc_info()[1]))
         raise HTTPException(status_code=422, detail="unique constraint on index failed")
     except:
         db.rollback()

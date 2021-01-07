@@ -1,4 +1,4 @@
-from ..delivery_router.schemas import Delivery
+from ..delivery_router.schemas import Delivery, Address
 from ..product_router.schemas import Product
 from ..payment_router.schemas import Payment
 from typing import Optional, List
@@ -32,11 +32,15 @@ class CreateOrderItem(BaseModel):
     product_id: int
     quantity: int
     purchase_type_id: int
+    product_weight: float
+    product_weight_unit_id: int
     duration: Optional[int]
     sub_total: Optional[int]
 
     class Config:
         orm_mode=True
+
+# //////////////////////
 
 class OrderBillBase(BaseModel):
     total: float
@@ -54,7 +58,7 @@ class OrderBill(OrderBillBase):
     id: int
     payment: Payment 
     date_created: datetime.datetime
-    date_modified: datetime.DateTime
+    date_modified: datetime.datetime
 
     class Config:
         orm_mode=True
@@ -64,8 +68,13 @@ class OrderBase(BaseModel):
 
 class CreateOrder(OrderBase):
     order_items: List[CreateOrderItem]
-    order_delivery: int
     owner_id: int
+    delivery_option_id: int
+    delivery_price: float
+    voucher_id: int
+    delivery_address: Address
+    order_bill: OrderBill
+    # Tax
 
 class UpdateOrder(BaseModel):
     order_state_id: Optional[int]
@@ -84,18 +93,3 @@ class Order(OrderBase):
     class Config:
         orm_mode=True
 
-class CreatePreviewOrder(BaseModel):
-    order_items: List[CreateOrderItem]
-    # shipping_to: 
-    delivery_option_id: int
-    voucher_id: Optional[int]
-
-class PreviewOrder(CreatePreviewOrder):
-    Total
-    Tax
-    Shipping details
-    Delivery_address
-    payment_method
-    
-    class Config:
-        orm_mode=True

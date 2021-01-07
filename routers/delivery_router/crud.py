@@ -1,15 +1,23 @@
+from services.pricing import calculate_delivery_option_price
 from ..location_router.crud import read_location_by_id
 from ..timeline_router.crud import read_timeline_by_id
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
 from sqlalchemy import exc
+from typing import List
 import sys
 
+# delivery options
 async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Session):
     try:
-        delivery_option = models.DeliveryOption(**payload.dict())
+        delivery_option = models.DeliveryOption(**payload.dict(exclude={'location_ids'}))
         db.add(delivery_option) 
+        db.flush()
+        for id in payload.location_ids:
+            location = await read_location_by_id(id, db)
+            if location:
+                delivery_option.locations.append(location)
         db.commit()   
         db.refresh(delivery_option)     
         return delivery_option
@@ -22,7 +30,7 @@ async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Sessi
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def read_delivery_option(skip:int, limit:int, search:str, value:str, location_id:int, db:Session):
+async def read_delivery_option(skip:int, limit:int, search:str, value:str, location_id:int, total_weight_in_kg:float, db:Session):
     base = db.query(models.DeliveryOption)
     if location_id:
         location = await read_location_by_id(location_id, db)
@@ -32,20 +40,24 @@ async def read_delivery_option(skip:int, limit:int, search:str, value:str, locat
         try:
             base = base.filter(models.DeliveryOption.__table__.c[search].like("%" + value + "%"))
         except KeyError:
-            return base.offset(skip).limit(limit).all()
-    return base.offset(skip).limit(limit).all()
+            res = base.offset(skip).limit(limit).all()
+    res = base.offset(skip).limit(limit).all()
+    if total_weight_in_kg:
+        for item in res:
+            item.price_to_pay = await calculate_delivery_option_price(total_weight_in_kg, item.rate)
+    return res
 
-async def read_delivery_by_id(id:int, db:Session):
+async def read_delivery_option_by_id(id:int, db:Session):
     return db.query(models.DeliveryOption).filter(models.DeliveryOption.id==id).first()
 
 async def update_delivery_option(id:int, payload:schemas.UpdateDeliveryOption, db:Session):
-    if not await read_delivery_by_id(id, db):
+    if not await read_delivery_option_by_id(id, db):
         raise HTTPException(status_code=404)
     try:
         updated = db.query(models.DeliveryOption).filter(models.DeliveryOption.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
         if bool(updated):
-            return await read_delivery_by_id(id, db)
+            return await read_delivery_option_by_id(id, db)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -57,7 +69,7 @@ async def update_delivery_option(id:int, payload:schemas.UpdateDeliveryOption, d
 
 async def delete_delivery_option(id:int, db:Session):
     try:
-        delivery_option = await read_delivery_by_id(id, db)
+        delivery_option = await read_delivery_option_by_id(id, db)
         if delivery_option:
             db.delete(delivery_option)
         db.commit()
@@ -67,6 +79,50 @@ async def delete_delivery_option(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
+async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Session):
+    delivery_option = await read_delivery_option_by_id(id, db)
+    if not delivery_option:
+        raise HTTPException(status_code=404)
+    try:
+        for id in location_ids:
+            location = await read_location_by_id(id, db)
+            if location:
+                delivery_option.locations.append(location)
+        db.commit()
+        db.refresh(delivery_option)
+        return delivery_option
+    except exc.IntegrityError:
+        db.rollback()      
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+async def remove_location_from_delivery_option(id:int, location_ids:List[int], db:Session):
+    delivery_option = await read_delivery_option_by_id(id, db)
+    if not delivery_option:
+        raise HTTPException(status_code=404)
+    try:
+        for id in location_ids:
+            location = await read_location_by_id(id, db)
+            if location:
+                delivery_option.locations.remove(location)
+        db.commit()
+        db.refresh(delivery_option)
+        return delivery_option
+    except exc.IntegrityError:
+        db.rollback()      
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+# ///////////////////////////////////
+# delivery
 async def create_delivery(payload:schemas.CreateDelivery, db:Session):
     try:
         delivery = models.Delivery(**payload.dict())
@@ -124,6 +180,7 @@ async def delete_delivery(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
+# [delivery]for custom timelines
 async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimeline, db:Session):
     delivery = await read_delivery_by_id(id, db)
     if not delivery:

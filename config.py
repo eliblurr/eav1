@@ -2,7 +2,7 @@ from pydantic import BaseSettings
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+# load_dotenv()
 
 # settings.py
 SECRET_KEY = os.getenv("EMAIL")
