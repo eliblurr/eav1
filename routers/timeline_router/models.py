@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, String, DateTime
-from database import Base
+from sqlalchemy import event, Boolean, Column, Integer, String, DateTime
+from database import Base, SessionLocal
 import datetime
 
 class Timeline(Base):
@@ -12,4 +12,10 @@ class Timeline(Base):
     status = Column(Boolean, default=True, nullable=False)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+@event.listens_for(Timeline.__table__, 'after_create')
+def insert_initial_values(*args, **kwargs):
+    db = SessionLocal()
+    db.add_all([ Timeline(title='delivery under review', description="this may take some time")])
+    db.commit()
 

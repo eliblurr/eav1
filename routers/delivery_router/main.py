@@ -34,8 +34,8 @@ async def create_delivery(payload:schemas.CreateDelivery, db:Session=Depends(get
     return await crud.create_delivery(payload, db)
 
 @router.get("/", description="read delivery", response_model=List[schemas.Delivery])
-async def read_delivery(skip:int=0, limit:int=100, search:str=None, value:str=None, db:Session=Depends(get_db)):
-    return await crud.read_delivery(skip, limit, search, value, db)
+async def read_delivery(skip:int=0, limit:int=100, search:str=None, value:str=None, location_id:int=0, db:Session=Depends(get_db)):
+    return await crud.read_delivery(skip, limit, search, value, location_id, db)
 
 @router.get("/{id}", description="read delivery by id", response_model=schemas.Delivery)
 async def read_delivery_by_id(id:int, db:Session=Depends(get_db)):

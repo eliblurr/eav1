@@ -1,4 +1,4 @@
-from ..delivery_router.schemas import Delivery, Address
+from ..delivery_router.schemas import Delivery, DeliveryAddress
 from ..product_router.schemas import Product
 from ..payment_router.schemas import Payment
 from typing import Optional, List
@@ -72,7 +72,7 @@ class CreateOrder(OrderBase):
     delivery_option_id: int
     delivery_price: float
     voucher_id: int
-    delivery_address: Address
+    delivery_address: DeliveryAddress
     order_bill: OrderBill
     # Tax
 

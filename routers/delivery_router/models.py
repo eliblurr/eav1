@@ -1,6 +1,7 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float
 from sqlalchemy.orm import relationship, backref
 from ..timeline_router.models import Timeline
+from ..location_router.models import Location
 from database import Base
 import datetime
 
@@ -12,10 +13,28 @@ class Delivery(Base):
      status = Column(Boolean, default=True, nullable=False)
      order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
      delivery_option_id = Column(Integer, ForeignKey("delivery_options.id"), nullable=False)
+     delivery_address = relationship('DeliveryAddress', uselist=False, backref="delivery", cascade="all, delete")
      delivery_timeline = relationship('Timeline', secondary='delivery_timeline', backref=backref('delivery', lazy='dynamic'), cascade="all, delete", lazy="dynamic")
      date_created = Column(DateTime, default=datetime.datetime.utcnow)
      date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
+class DeliveryAddress(Base):
+     __tablename__ = "delivery_address"
+
+     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+     first_name = Column(String, nullable=False)
+     middle_name = Column(String, nullable=True)
+     last_name = Column(String, nullable=False)
+     phone = Column(String, nullable=False)
+     address_line_1 = Column(String, nullable=False)
+     address_line_2 = Column(String, nullable=True)
+     status = Column(Boolean, default=True, nullable=False)
+     date_created = Column(DateTime, default=datetime.datetime.utcnow)
+     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+     delivery_id = Column(Integer, ForeignKey("delivery.id"), nullable=False)
+     location_id = Column(Integer, ForeignKey('locations.id'))
+     location = relationship('Location')
+     
 class DeliveryOption(Base):
      __tablename__ = "delivery_options"
 

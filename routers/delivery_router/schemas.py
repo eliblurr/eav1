@@ -1,4 +1,5 @@
 from ..timeline_router.schemas import Timeline
+from ..location_router.schemas import Location
 from typing import Optional, List
 from pydantic import BaseModel, validator
 import datetime
@@ -39,15 +40,6 @@ class DeliveryOption(DeliveryOptionBase):
     class Config:
         orm_mode=True
 
-#///////////////////////////////////
-
-class CreateDeliveryTimeline(BaseModel):
-    title: str
-    metatitle: Optional[str]
-    description: Optional[str]
-    status: Optional[bool]
-    index: int
-
 class DeliveryTimeline(BaseModel):
     id: Optional[int]
     title: Optional[str]
@@ -61,40 +53,70 @@ class DeliveryTimeline(BaseModel):
     class Config:
         orm_mode=True
 
-class DeliveryBase(BaseModel):
+class DeliveryAddressBase(BaseModel):
+    first_name: str
+    middle_name: Optional[str]
+    last_name: str
+    phone: str
+    address_line_1: str
+    address_line_2: Optional[str]
     status: Optional[bool]
-    delivery_option_id: int
-    price: float
-    order_id: int
+    
+class CreateDeliveryAddress(DeliveryAddressBase):
+    location_id: int
 
-class CreateDelivery(DeliveryBase):
-    pass
-
-class UpdateDelivery(BaseModel):
+class UpdateDeliveryAddress(BaseModel):
+    first_name: Optional[str]
+    middle_name: Optional[str]
+    last_name: Optional[str]
+    phone: Optional[str]
+    address_line_1: Optional[str]
+    address_line_2: Optional[str]
     status: Optional[bool]
-    delivery_option_id: Optional[int]
-    price: Optional[float]
 
-class Delivery(DeliveryBase):
+class DeliveryAddress(DeliveryAddressBase):
     id: int
-    delivery_option: DeliveryOption
-    delivery_timeline: List[DeliveryTimeline]
+    location: Location
     date_created: datetime.datetime
     date_modified: datetime.datetime
 
     class Config:
         orm_mode=True
 
-class AddressBase(BaseModel):
-    country_id: int
-    sub_country_id: int 
-    location_id: Optional[int]
-    zip_code: str
+class DeliveryBase(BaseModel):
+    price: float
+    status: Optional[bool]
+    order_id: Optional[int]
+    delivery_address: CreateDeliveryAddress
+    
+class CreateDelivery(DeliveryBase):
+    delivery_option_id: int
 
-class Address(AddressBase):
-    first_name: str
-    middle_name: str
-    last_name: str
-    phone: str
-    address_line_1: str
-    address_line_2: str
+class UpdateDelivery(BaseModel):
+    status: Optional[bool]
+    # delivery_option_id: Optional[int]
+    price: Optional[float]
+
+class Delivery(DeliveryBase):
+    id: int
+    delivery_option: Optional[DeliveryOption]
+    delivery_address: DeliveryAddress
+    # delivery_timeline: DeliveryTimeline
+    # delivery_timeline: Optional[List[DeliveryTimeline]]
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+
+    class Config:
+        orm_mode=True
+
+#///////////////////////////////////
+
+class CreateDeliveryTimeline(BaseModel):
+    title: str
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+    index: int
+
+
+    

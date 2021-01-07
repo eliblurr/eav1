@@ -124,9 +124,16 @@ async def remove_location_from_delivery_option(id:int, location_ids:List[int], d
 # ///////////////////////////////////
 # delivery
 async def create_delivery(payload:schemas.CreateDelivery, db:Session):
+    if not await read_delivery_option_by_id(payload.delivery_option_id, db):
+        raise HTTPException(status_code=404, detail="delivery option not found")
+    if not await read_location_by_id(payload.delivery_address.location_id, db):
+        raise HTTPException(status_code=404, detail="location not found")
     try:
-        delivery = models.Delivery(**payload.dict())
+        delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
         db.add(delivery) 
+        db.flush()
+        delivery_address = models.DeliveryAddress(**payload.delivery_address.dict(), delivery_id=delivery.id)
+        db.add(delivery_address) 
         db.commit()   
         db.refresh(delivery)     
         return delivery
@@ -139,8 +146,10 @@ async def create_delivery(payload:schemas.CreateDelivery, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def read_delivery(skip:int, limit:int, search:str, value:str, db:Session):
+async def read_delivery(skip:int, limit:int, search:str, value:str, location_id:int, db:Session):
     base = db.query(models.Delivery)
+    if location_id:
+        base = base.join(models.DeliveryAddress).join(models.Location).filter(models.Location.id == location_id)
     if search and value:
         try:
             base = base.filter(models.Delivery.__table__.c[search].like("%" + value + "%"))
