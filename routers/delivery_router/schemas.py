@@ -40,19 +40,6 @@ class DeliveryOption(DeliveryOptionBase):
     class Config:
         orm_mode=True
 
-class DeliveryTimeline(BaseModel):
-    id: Optional[int]
-    title: Optional[str]
-    metatitle: Optional[str]
-    description: Optional[str]
-    status: Optional[bool]
-    date_created: datetime.datetime
-    date_modified: datetime.datetime
-    delivery_timeline: Optional[Timeline]
-
-    class Config:
-        orm_mode=True
-
 class DeliveryAddressBase(BaseModel):
     first_name: str
     middle_name: Optional[str]
@@ -94,29 +81,68 @@ class CreateDelivery(DeliveryBase):
 
 class UpdateDelivery(BaseModel):
     status: Optional[bool]
-    # delivery_option_id: Optional[int]
     price: Optional[float]
+    price: Optional[float]
+
+class CreateDeliveryTimeline(BaseModel):
+    index: int
+    timeline_id: int
+    title: str
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+
+    @validator('timeline_id')
+    def timeline_validation(cls, v, values, **kwargs):
+        if not v:
+            raise ValueError('timeline_id cannot be empty or 0')
+        return v
+    
+    @validator('index')
+    def index_validation(cls, v):
+        if not v:
+            raise ValueError("index cannot be null or 0")
+        return v
+
+#///////////////////////////////////
+
+
+
+class DeliveryTimeline(BaseModel):
+    # delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)
+    #  timeline_id = Column(Integer, ForeignKey("timeline.id"), primary_key=True)
+    #  index = Column(Integer, nullable=False,  primary_key=True)
+    #  title = Column(String, nullable=True)
+    #  metatitle = Column(String, nullable=True)
+    #  description = Column(String, nullable=True)
+    #  status = Column(Boolean, default=True, nullable=True)
+    #  date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    #  date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    #  timeline = relationship("Timeline", back_populates="delivery")
+    #  delivery
+    index: int
+    title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
+    status: Optional[bool]
+    date_created: datetime.datetime
+    date_modified: datetime.datetime
+    # timeline: List[]
+    # delivery:
+
+    class Config:
+        orm_mode=True
+
+
 
 class Delivery(DeliveryBase):
     id: int
-    delivery_option: Optional[DeliveryOption]
+    delivery_option: DeliveryOption
     delivery_address: DeliveryAddress
-    # delivery_timeline: DeliveryTimeline
+    # delivery_timeline: List[DeliveryTimeline]
     # delivery_timeline: Optional[List[DeliveryTimeline]]
     date_created: datetime.datetime
     date_modified: datetime.datetime
 
     class Config:
         orm_mode=True
-
-#///////////////////////////////////
-
-class CreateDeliveryTimeline(BaseModel):
-    title: str
-    metatitle: Optional[str]
-    description: Optional[str]
-    status: Optional[bool]
-    index: int
-
-
-    

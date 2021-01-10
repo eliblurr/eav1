@@ -1,10 +1,10 @@
 from services.pricing import calculate_delivery_option_price
 from ..location_router.crud import read_location_by_id
 from ..timeline_router.crud import read_timeline_by_id
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, exc as orm_exc
 from fastapi import HTTPException
+from sqlalchemy import exc, and_
 from . import models, schemas
-from sqlalchemy import exc
 from typing import List
 import sys
 
@@ -189,19 +189,23 @@ async def delete_delivery(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-# [delivery]for custom timelines
 async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimeline, db:Session):
     delivery = await read_delivery_by_id(id, db)
+    timeline = await read_timeline_by_id(payload.timeline_id, db)
+    if not timeline:
+        raise HTTPException(status_code=404, detail="timeline not found")
+    if timeline.title=='custom' and payload.title=='':
+        raise HTTPException(status_code=422, detail="title required for custom timeline")
     if not delivery:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="delivery not found")
     try:
-        delivery_timeline = models.DeliveryTimeline(**payload.dict())
-        db.add(delivery_timeline) 
-        db.flush()
-        delivery.delivery_timeline.append(delivery_timeline)
-        db.commit()   
-        db.refresh(delivery_timeline)     
-        return delivery_timeline
+        delivery_timeline = models.DeliveryTimeline(**payload.dict(exclude={'timeline_id'}), timeline=timeline)
+        delivery.timeline.append(delivery_timeline)
+        db.commit()
+    except orm_exc.FlushError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -211,29 +215,20 @@ async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimelin
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def toggle_timeline_delivery(id:int, timeline_id:int, db:Session):
-    delivery = await read_delivery_by_id(id, db)
-    timeline = await read_timeline_by_id(timeline_id, db)
-    res = (delivery is not None, timeline is not None)
-    if all(res):
-        pass
-    else:
-        raise HTTPException(status_code=404, detail="{} not found".format('delivery' if not(res[0]) else 'timeline'))
+async def remove_delivery_timeline(id:int, timeline_id:int, index:int, db:Session):
+    delivery_timeline = db.query(models.DeliveryTimeline).filter(
+        and_(
+            models.DeliveryTimeline.delivery_id==id,
+            models.DeliveryTimeline.timeline_id==timeline_id,
+            models.DeliveryTimeline.index==index,
+        )
+    ).first()
     try:
-        if timeline not in delivery.delivery_timeline:
-            delivery.delivery_timeline.append(timeline)
-            state = 'added'
-        else:
-            delivery.delivery_timeline.remove(timeline)
-            state = 'removed'
+        if delivery_timeline:
+            db.delete(delivery_timeline)
         db.commit()
-        db.refresh(delivery)
-        return True, state
-    except exc.IntegrityError:
-        db.rollback()
-        print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=409)
-    except:      
+        return True
+    except:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
@@ -242,4 +237,6 @@ async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     delivery = await read_delivery_by_id(id, db)
     if not delivery:
         raise HTTPException(status_code=404)
-    return delivery.delivery_timeline.offset(skip).limit(limit).all()
+    return delivery.timeline
+    # .all()
+    # .offset(skip).limit(limit).all()
