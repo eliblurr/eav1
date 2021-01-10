@@ -5,29 +5,6 @@ from . import models, schemas
 from sqlalchemy import exc
 import sys
 
-async def preview_order():
-    pass
-
-async def create_order():
-    # 1. validate payload
-    # 1. create order bill
-    # 2. make payments
-    # 3. create order
-    # 4. create delivery and add to order
-    # 5. create payment and add to order
-    pass
-
-async def read_orders():
-    pass
-
-async def read_order_by_id():
-    pass
-
-async def update_order():
-    pass
-
-async def delete_order():
-    pass
 
 async def create_order_state(payload:schemas.CreateOrderState, db:Session):
     try:
@@ -84,6 +61,38 @@ async def delete_order_state(id:int, db:Session):
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
+
+#////////////////////////////////
+
+async def preview_order():
+    pass
+
+async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
+    # create parent, append a child via association
+    # p = Parent() ... order
+    # a = Association(extra_data="some data") ... create order_item object
+    # a.child = Child() ... add product to order_item object product
+    # p.children.append(a) ... add order_item object to order
+    # 1. validate payload
+    # 1. create order bill
+    # 2. make payments
+    # 3. create order
+    # 4. create delivery and add to order
+    # 5. create payment and add to order
+    pass
+
+async def read_orders():
+    pass
+
+async def read_order_by_id():
+    pass
+
+async def update_order():
+    pass
+
+async def delete_order():
+    pass
+
 
 # create order
 # read orders/user/location

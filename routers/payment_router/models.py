@@ -14,3 +14,4 @@ class Payment(Base):
     payment_type_id = Column(Integer, ForeignKey('payment_type.id'), nullable=False)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)

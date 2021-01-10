@@ -32,15 +32,14 @@ class CreateOrderItem(BaseModel):
     product_id: int
     quantity: int
     purchase_type_id: int
-    product_weight: float
-    product_weight_unit_id: int
     duration: Optional[int]
-    sub_total: Optional[int]
-
+   
     class Config:
         orm_mode=True
-
+        
 # //////////////////////
+
+
 
 class OrderBillBase(BaseModel):
     total: float
@@ -93,3 +92,6 @@ class Order(OrderBase):
     class Config:
         orm_mode=True
 
+# product_weight: float
+# product_weight_unit_id: int
+# sub_total: Optional[int]

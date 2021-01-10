@@ -17,7 +17,8 @@ class Orders(Base):
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     order_bill = relationship('OrderBill', backref='order', uselist=False, cascade='all,delete')
     order_delivery = relationship('Delivery', backref='order', uselist=False, cascade="all,delete")
-    order_items = relationship('Products', secondary='order_items', backref=backref('order', lazy='dynamic'), lazy='dynamic')
+    order_items = relationship('OrderItems', uselist=True, backref='order')
+    # order_items = relationship('Products', secondary='order_items', backref=backref('order', lazy='dynamic'), lazy='dynamic')
   
 class OrderState(Base):
     __tablename__ = "order_state"
@@ -35,12 +36,11 @@ class OrderBill(Base):
     __tablename__ = "order_bill"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    total = Column(Float, nullable=False)
+    amount = Column(Float, nullable=False)
     status = Column(Boolean, default=True, nullable=False)
-    # customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     order_id = Column(Integer, ForeignKey("orders.id"), nullable=False)
     payment_id = Column(Integer, ForeignKey("payments.id"), nullable=False)
-    payment = relationship('Payment', backref="bill", uselist=False, cascade="all, delete")
+    payment = relationship('Payment', backref="order_bill", uselist=False, cascade="all, delete")
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -54,4 +54,12 @@ class OrderItems(Base):
     sub_total = Column(Float, nullable=False) 
     purchase_type_id = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=True)
+    product = relationship('Products')
+    # order
+    # product
 
+@event.listens_for(OrderState.__table__, 'after_create')
+def insert_initial_values(*args, **kwargs):
+    db = SessionLocal()
+    db.add_all([OrderState( title='processing', description="your order has been placed")])
+    db.commit()
