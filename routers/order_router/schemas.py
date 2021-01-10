@@ -36,31 +36,31 @@ class CreateOrderItem(BaseModel):
    
     class Config:
         orm_mode=True
-        
+
 # //////////////////////
 
 
 
-class OrderBillBase(BaseModel):
-    total: float
-    status: Optional[bool]
+# class OrderBillBase(BaseModel):
+#     total: float
+#     status: Optional[bool]
 
-class CreateOrderBill(OrderBillBase):
-    order_id: int
-    payment_id: int
+# class CreateOrderBill(OrderBillBase):
+#     order_id: int
+#     payment_id: int
 
-class UpdateOrderBase(BaseModel):
-    order_id: Optional[int]
-    payment_id: Optional[int]
+# class UpdateOrderBill(BaseModel):
+#     order_id: Optional[int]
+#     payment_id: Optional[int]
 
-class OrderBill(OrderBillBase):
-    id: int
-    payment: Payment 
-    date_created: datetime.datetime
-    date_modified: datetime.datetime
+# class OrderBill(OrderBillBase):
+#     id: int
+#     payment: Payment 
+#     date_created: datetime.datetime
+#     date_modified: datetime.datetime
 
-    class Config:
-        orm_mode=True
+#     class Config:
+#         orm_mode=True
 
 class OrderBase(BaseModel):
     status: Optional[bool]

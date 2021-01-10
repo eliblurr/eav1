@@ -55,8 +55,6 @@ class OrderItems(Base):
     purchase_type_id = Column(Integer, nullable=False)
     duration = Column(Integer, nullable=True)
     product = relationship('Products')
-    # order
-    # product
 
 @event.listens_for(OrderState.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
