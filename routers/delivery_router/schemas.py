@@ -106,20 +106,7 @@ class CreateDeliveryTimeline(BaseModel):
 
 #///////////////////////////////////
 
-
-
 class DeliveryTimeline(BaseModel):
-    # delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)
-    #  timeline_id = Column(Integer, ForeignKey("timeline.id"), primary_key=True)
-    #  index = Column(Integer, nullable=False,  primary_key=True)
-    #  title = Column(String, nullable=True)
-    #  metatitle = Column(String, nullable=True)
-    #  description = Column(String, nullable=True)
-    #  status = Column(Boolean, default=True, nullable=True)
-    #  date_created = Column(DateTime, default=datetime.datetime.utcnow)
-    #  date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    #  timeline = relationship("Timeline", back_populates="delivery")
-    #  delivery
     index: int
     title: Optional[str]
     metatitle: Optional[str]
@@ -127,13 +114,11 @@ class DeliveryTimeline(BaseModel):
     status: Optional[bool]
     date_created: datetime.datetime
     date_modified: datetime.datetime
-    # timeline: List[]
-    # delivery:
+    timeline: Timeline
+    delivery_id: int
 
     class Config:
         orm_mode=True
-
-
 
 class Delivery(DeliveryBase):
     id: int
@@ -146,3 +131,15 @@ class Delivery(DeliveryBase):
 
     class Config:
         orm_mode=True
+
+  # delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)
+    #  timeline_id = Column(Integer, ForeignKey("timeline.id"), primary_key=True)
+    #  index = Column(Integer, nullable=False,  primary_key=True)
+    #  title = Column(String, nullable=True)
+    #  metatitle = Column(String, nullable=True)
+    #  description = Column(String, nullable=True)
+    #  status = Column(Boolean, default=True, nullable=True)
+    #  date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    #  date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    #  timeline = relationship("Timeline", back_populates="delivery")
+    #  delivery

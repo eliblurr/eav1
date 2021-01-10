@@ -202,6 +202,8 @@ async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimelin
         delivery_timeline = models.DeliveryTimeline(**payload.dict(exclude={'timeline_id'}), timeline=timeline)
         delivery.timeline.append(delivery_timeline)
         db.commit()
+        db.refresh(delivery_timeline)
+        return delivery_timeline
     except orm_exc.FlushError:
         db.rollback()
         print("{}".format(sys.exc_info()))

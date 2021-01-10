@@ -52,19 +52,14 @@ async def update_delivery(id:int, payload:schemas.UpdateDelivery, db:Session=Dep
 async def delete_delivery(id:int, db:Session=Depends(get_db)):
     return await crud.delete_delivery(id, db)
 
-# response_model=schemas.DeliveryTimeline,
-@router.post("_timelines/{id}", description="create custom timeline for delivery", status_code=status.HTTP_201_CREATED)
+@router.post("_timelines/{id}", description="create custom timeline for delivery", status_code=status.HTTP_201_CREATED, response_model=schemas.DeliveryTimeline)
 async def create_delivery_timeline(id:int, payload:schemas.CreateDeliveryTimeline, db:Session=Depends(get_db)):
     return await crud.create_delivery_timeline(id, payload, db)
 
 @router.delete("{id}/timelines/{timeline_id}", description="remove timeline from delivery_timeline", status_code=status.HTTP_201_CREATED)
 async def remove_delivery_timeline(id:int, timeline_id:int, index:int, db:Session=Depends(get_db)):
     return await crud.remove_delivery_timeline(id, timeline_id, index, db)
-# @router.put("/{id}/timelines/{timeline_id}", description="add or remove timeline from delivery timeline", status_code=status.HTTP_202_ACCEPTED)
-# async def toggle_timeline_delivery(id:int, timeline_id:int, db:Session=Depends(get_db)):
-#     return await crud.toggle_timeline_delivery(id, timeline_id, db)
 
-# , response_model=List[schemas.DeliveryTimeline]
-@router.get("_timeline/{id}", description="read delivery timeline")
+@router.get("_timeline/{id}", description="read delivery timeline", response_model=List[schemas.DeliveryTimeline])
 async def read_delivery_timeline(id:int, skip:int=0, limit:int=100, db:Session=Depends(get_db)):
     return await crud.read_delivery_timeline(id, skip, limit, db)
