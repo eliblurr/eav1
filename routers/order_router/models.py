@@ -18,7 +18,6 @@ class Orders(Base):
     order_bill = relationship('OrderBill', backref='order', uselist=False, cascade='all,delete')
     order_delivery = relationship('Delivery', backref='order', uselist=False, cascade="all,delete")
     order_items = relationship('OrderItems', uselist=True, backref='order')
-    # order_items = relationship('Products', secondary='order_items', backref=backref('order', lazy='dynamic'), lazy='dynamic')
   
 class OrderState(Base):
     __tablename__ = "order_state"
