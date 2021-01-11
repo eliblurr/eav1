@@ -1,10 +1,12 @@
+from ..delivery_router.crud import read_delivery_option_by_id, read_location_by_id
 from ..product_router.crud import read_product_by_id
+from ..promo_router.crud import read_promo_by_id
+from ..users_router.crud import read_user_by_id
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
 from sqlalchemy import exc
 import sys
-
 
 async def create_order_state(payload:schemas.CreateOrderState, db:Session):
     try:
@@ -64,11 +66,46 @@ async def delete_order_state(id:int, db:Session):
 
 #////////////////////////////////
 
-async def preview_order():
-    pass
-
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
-    # create parent, append a child via association
+    # validate -> owner_id, voucher_id[if present]
+    if not await read_user_by_id(payload.owner_id, db):
+        pass
+        # raise HTTPException(status_code=404, detail="user not found")
+    if payload.voucher_id and await read_promo_by_id(payload.voucher_id, db):
+        pass
+        # raise HTTPException(status_code=404, detail="voucher not found")
+
+    # use delivery address to and delivery price to generate delivery
+    if not await read_delivery_option_by_id(payload.delivery_option_id, db):
+        pass
+        # raise HTTPException(status_code=404, detail="delivery option not found")
+    if not await read_location_by_id(payload.delivery_address.location_id, db):
+        pass
+        # raise HTTPException(status_code=404, detail="location not found")
+
+    # use order items to generate oreder bill
+    for item in payload.order_items:
+        # get product
+        pass
+    
+    try:
+        # print(type(payload.delivery_address))
+        pass
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
+    # delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
+    # db.add(delivery) 
+    # db.flush()
+    # delivery_address = models.DeliveryAddress(**payload.delivery_address.dict(), delivery_id=delivery.id)
+    # -----------------------------------------------------------------
+    # ////////
     # p = Parent() ... order
     # a = Association(extra_data="some data") ... create order_item object
     # a.child = Child() ... add product to order_item object product
