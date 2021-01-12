@@ -1,4 +1,5 @@
 from ..delivery_router.crud import read_delivery_option_by_id, read_location_by_id
+from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..product_router.crud import read_product_by_id
 from ..promo_router.crud import read_promo_by_id
 from ..users_router.crud import read_user_by_id
@@ -69,23 +70,21 @@ async def delete_order_state(id:int, db:Session):
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     # validate -> owner_id, voucher_id[if present]
     if not await read_user_by_id(payload.owner_id, db):
-        pass
-        # raise HTTPException(status_code=404, detail="user not found")
+        pass # raise HTTPException(status_code=404, detail="user not found")
     if payload.voucher_id and await read_promo_by_id(payload.voucher_id, db):
-        pass
-        # raise HTTPException(status_code=404, detail="voucher not found")
-
+        pass # raise HTTPException(status_code=404, detail="voucher not found")
+        
     # use delivery address to and delivery price to generate delivery
     if not await read_delivery_option_by_id(payload.delivery_option_id, db):
-        pass
-        # raise HTTPException(status_code=404, detail="delivery option not found")
+        pass # raise HTTPException(status_code=404, detail="delivery option not found") 
     if not await read_location_by_id(payload.delivery_address.location_id, db):
-        pass
-        # raise HTTPException(status_code=404, detail="location not found")
-
+        pass # raise HTTPException(status_code=404, detail="location not found")
+        
     # use order items to generate oreder bill
     for item in payload.order_items:
-        # get product
+        # get purchase type id
+        purchase_type = await read_purchase_type_by_id(item.purchase_type_id, db)
+        
         pass
     
     try:
