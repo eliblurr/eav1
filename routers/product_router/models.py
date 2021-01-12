@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
-from ..purchase_type_router.models import PurchaseType
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, UniqueConstraint
+# from ..purchase_type_router.models import PurchaseType
 from ..weight_unit_router.models import WeightUnit
 from ..currency_router.models import Currency
 from ..reviews_router.models import Reviews

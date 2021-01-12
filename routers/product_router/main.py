@@ -7,8 +7,23 @@ from main import get_db
 router = APIRouter()
 
 @router.post("/", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.Product)
-async def create_product(payload:schemas.CreateProduct, db: Session = Depends(get_db)):
-    pass
+async def create_product():
+    from money.money import Money
+    from money.currency import Currency
+    m = Money('9.95', Currency.GBP)
+    k = Money('3.24', Currency.USD).format('en_US')
+    l = Money('89.24', Currency.GBP).format('en_UK')
+    n = Money('19.24', Currency.USD).format('ja_JP')
+    # en_UK
+    # ja_JP
+
+    print(k)
+    print(l)
+    print(n)
+
+    # print(dir(Currency))
+    # print(dir(m))
+
     # return await crud.create_product(payload, images, db)
 
 # @router.post("/", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.Product)
