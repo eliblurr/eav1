@@ -1,3 +1,4 @@
+from ..currency_router.schemas import Currency
 from pydantic import BaseModel
 from typing import Optional
 import datetime
@@ -14,6 +15,7 @@ class UpdateCountry(BaseModel):
 
 class Country(CountryBase):
     id: int
+    currency: Currency
     date_created: datetime.datetime
     date_modified: datetime.datetime
 

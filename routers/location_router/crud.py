@@ -14,7 +14,7 @@ header = ['CITY', 'COUNTRY', 'SUB_COUNTRY', 'GEO_ID']
 
 # country
 async def create_country(payload: schemas.CreateCountry, db: Session):
-    if await read_currency_by_id(payload.currency_id, db):
+    if not await read_currency_by_id(payload.currency_id, db):
         raise HTTPException(status_code=404, detail="currency not found")
     try:
         country = models.Country(**payload.dict()) 

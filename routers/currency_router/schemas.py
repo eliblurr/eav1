@@ -4,7 +4,7 @@ import datetime
 
 class CurrencyBase(BaseModel):
     title: str
-    symbol: str
+    symbol: Optional[str]
     status: Optional[bool]
 
 class CreateCurrency(CurrencyBase):
