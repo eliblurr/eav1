@@ -10,6 +10,7 @@ class CreateCountry(CountryBase):
 
 class UpdateCountry(BaseModel):
     name: Optional[str]
+    currency_id: Optional[int]
 
 class Country(CountryBase):
     id: int

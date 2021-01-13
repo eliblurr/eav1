@@ -46,6 +46,8 @@ async def read_country_by_id(id: int, db: Session):
 async def update_country(id: int, payload: schemas.UpdateCountry, db: Session):
     if await read_country_by_id(id, db) is None:
         raise HTTPException(status_code=404)
+    if payload.currency_id and await read_currency_by_id(payload.currency_id, db):
+        raise HTTPException(status_code=404, detail="currency not found")
     try:
         updated = db.query(models.Country).filter(models.Country.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
