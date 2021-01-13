@@ -15,7 +15,7 @@ class PurchaseType(Base):
     status = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    items = relationship('Products', backref="purchase_type", uselist=True, cascade="all, delete")
+    # items = relationship('Products', backref="purchase_type", uselist=True, cascade="all, delete")
 
 @event.listens_for(PurchaseType.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):

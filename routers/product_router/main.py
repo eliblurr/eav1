@@ -21,7 +21,7 @@ async def create_product():
     print(l)
     print(n)
 
-    # print(dir(Currency))
+    print(dir(Currency))
     # print(dir(m))
 
     # return await crud.create_product(payload, images, db)

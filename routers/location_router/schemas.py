@@ -6,7 +6,7 @@ class CountryBase(BaseModel):
     name: str
 
 class CreateCountry(CountryBase):
-    pass
+    currency_id: int
 
 class UpdateCountry(BaseModel):
     name: Optional[str]

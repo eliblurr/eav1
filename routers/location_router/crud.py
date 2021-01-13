@@ -1,3 +1,4 @@
+from ..currency_router.crud import read_currency_by_id
 from fastapi import Depends, HTTPException
 from sqlalchemy import exc, inspect
 from sqlalchemy.orm import Session
@@ -13,6 +14,8 @@ header = ['CITY', 'COUNTRY', 'SUB_COUNTRY', 'GEO_ID']
 
 # country
 async def create_country(payload: schemas.CreateCountry, db: Session):
+    if await read_currency_by_id(payload.currency_id, db):
+        raise HTTPException(status_code=404, detail="currency not found")
     try:
         country = models.Country(**payload.dict()) 
         db.add(country)
@@ -201,7 +204,7 @@ async def delete_location(ids: List[int], db: Session):
 # fileio
 async def create_location_from_file(file, db: Session):
     if len(file.filename.split('.')) != 2:
-        raise HTTPException(status_code=400, detail="try name.ext")   
+        raise HTTPException(status_code=400, detail="try_name.ext")   
     
     name, ext = file.filename.split('.')
     if not ext in supported_ext:
