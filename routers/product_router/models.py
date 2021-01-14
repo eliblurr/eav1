@@ -54,11 +54,8 @@ class ProductPaymentInfo(Base):
     batch_size = Column(Integer, nullable=False)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-
     purchase_type = relationship('PurchaseType')
     purchase_type_id = Column(Integer, ForeignKey("purchase_type.id"), nullable=False, primary_key=True)
-
+    product_id = Column(Integer, ForeignKey("products.id"), primary_key=True)
     currency = relationship('Currency')
     currency_id = Column(Integer,ForeignKey("currency.id"), primary_key=True)
-
-    product_id = Column(Integer, ForeignKey("products.id"), primary_key=True)
