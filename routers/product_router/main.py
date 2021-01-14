@@ -34,6 +34,10 @@ router = APIRouter()
 async def create_product(payload:schemas.CreateProduct, images:str=None, db: Session=Depends(get_db)):
     return await crud.create_product(payload, images, db)
 
+@router.post('/form')
+async def aa(payload=Depends(schemas.CreateProduct.as_form)):
+    return payload
+
 # @router.post("/", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.Product)
 # async def create_product(payload = Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)):
 #     return await crud.create_product(payload, images, db)

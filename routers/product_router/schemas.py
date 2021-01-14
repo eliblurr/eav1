@@ -6,7 +6,7 @@ from ..reviews_router.schemas import Review
 from pydantic import BaseModel, conint, Field, validator
 from typing import List, Optional
 from fastapi import Form
-import datetime
+import datetime, utils
 
 class ProductImageBase(BaseModel):
     image_url: str
@@ -87,10 +87,51 @@ class CreateProduct(ProductBase):
         if 'initial_quantity' in values and v > values['initial_quantity']:
             v = values['initial_quantity']
         return v
-
+    
     @classmethod
-    def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(...), unit_price: float = Form(...), serial_number: str = Form(None), available_quantity: int = Form(None), initial_quantity:int = Form(...), wholesale_price:float=Form(None), wholesale_quantity:int=Form(None), status:bool=Form(True), weight:float=Form(None), purchase_type_id:int=Form(...), weight_unit_id:int=Form(None), owner_id:int=Form(...), currency_id:int=Form(...), category_ids: List[int] = Form(...), event_ids: List[int] = Form(...),location_ids: List[int] = Form(...) ):
-        return cls(title=title, metatitle=metatitle, description=description, unit_price=unit_price, serial_number=serial_number, available_quantity=available_quantity, initial_quantity=initial_quantity, wholesale_price=wholesale_price, wholesale_quantity=wholesale_quantity, status=status, weight=weight, purchase_type_id=purchase_type_id, weight_unit_id=weight_unit_id, owner_id=owner_id, currency_id=currency_id, category_ids=category_ids, event_ids=event_ids, location_ids=location_ids)
+    async def as_form(
+        cls,
+        title:str=Form(...),
+        metatitle:str=Form(None),
+        description:str=Form(...),
+        serial_number:str=Form(None),
+        owner_id:conint(gt=0)=Form(...),
+        initial_quantity:conint(gt=0)=Form(...),
+        status:bool=Form(True),
+        country_id:conint(gt=0)=Form(...),
+        weight:Optional[float]=Form(None),
+        batch_size:conint(gt=0)=Form(...),
+        batch_price:float=Form(...),
+        purchase_type_id:conint(gt=0)=Form(...),
+        event_ids:List[str]=Form(...),
+        category_ids:List[str]=Form(...),
+        location_ids:List[str]=Form(...),
+        available_quantity:Optional[conint(gt=0)]=Form(None),
+        duration:Optional[conint(gt=0)]=Form(None)
+    ):
+        location_ids = await utils.string_list_to_int_list(location_ids[0].split(","))
+        event_ids = await utils.string_list_to_int_list(event_ids[0].split(","))
+        category_ids = await utils.string_list_to_int_list(category_ids[0].split(","))
+        payment_info = { 'batch_price':batch_price, 'batch_size':batch_size, 'duration':duration, 'purchase_type_id':purchase_type_id }
+        if available_quantity is None or available_quantity>initial_quantity:
+            available_quantity=initial_quantity
+
+        return cls(
+            title=title,
+            metatitle=metatitle,
+            description=description,
+            serial_number=serial_number,
+            owner_id=owner_id,
+            initial_quantity=initial_quantity,
+            status=status,
+            country_id=country_id,
+            weight=weight,
+            event_ids=event_ids,
+            category_ids=category_ids,
+            location_ids=location_ids,
+            payment_info=payment_info,
+            available_quantity=available_quantity
+        )
 
 class UpdateProduct(BaseModel):
     title: Optional[str]

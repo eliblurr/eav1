@@ -117,6 +117,13 @@ async def string_list_to_int_list(str_list:list):
             int_list.append(int(item))
     return int_list
 
+# def string_to_int_list(str_list:list):
+#     int_list = []
+#     for item in str_list:
+#         if item.isdigit():
+#             int_list.append(int(item))
+#     return int_list
+
 def get_exceptions_logger():
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')

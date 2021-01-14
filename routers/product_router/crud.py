@@ -29,13 +29,11 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
         raise HTTPException(status_code=404, detail='{} not found'.format('country' if not res[0] else 'purchase type' if not res[0] else 'user'))
     try:
         # urls, folder_name = await image_folder_io.create(images, 700, 500)
-        locations = db.query(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
-        payment_info = models.ProductPaymentInfo(**payload.payment_info.dict(), currency_id=country.currency_id)
         new_product = models.Products( **payload.dict(exclude={'category_ids', 'event_ids', 'location_ids', 'payment_info', 'country_id'}),  weight_unit_id=country.weight_unit_id)
         db.add(new_product)
+        payment_info = models.ProductPaymentInfo(**payload.payment_info.dict(), currency_id=country.currency_id)
         new_product.payment_info.append(payment_info)
         db.flush()
-
         # append to category
         for id in payload.category_ids:
             category = db.query(Categories).filter(Categories.id==id).first()
@@ -47,17 +45,16 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
             if event:
                 new_product.events.append(event)
         # append to location
+        locations = db.query(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
         for id in payload.location_ids:
             location = db.query(Location).filter(Location.id == id).first()
             if location in locations.all():
                 new_product.locations.append(location) 
-
         # append images
-        # for url in urls:
-        #     url = models.ProductImages(image_url=url, folder_name=folder_name)
-        #     new_product.images.append(url)
-                # print('sd')
-                # pass
+        urls=[]
+        for url in urls:
+            url = models.ProductImages(image_url=url, folder_name=folder_name)
+            new_product.images.append(url)
         
         # db.commit()
         # db.refresh(new_product)
