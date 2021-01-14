@@ -115,7 +115,6 @@ class CreateProduct(ProductBase):
         payment_info = { 'batch_price':batch_price, 'batch_size':batch_size, 'duration':duration, 'purchase_type_id':purchase_type_id }
         if available_quantity is None or available_quantity>initial_quantity:
             available_quantity=initial_quantity
-
         return cls(
             title=title,
             metatitle=metatitle,
