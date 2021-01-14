@@ -71,9 +71,6 @@ class ProductBase(BaseModel):
     status: Optional[bool]
     weight: Optional[float]
     owner_id: conint(gt=0)
-    # weight_unit_id: Optional[conint(gt=0)]
-    # wholesale_price: Optional[conint(gt=0)]
-    # wholesale_quantity: Optional[conint(gt=0)]
     
 class CreateProduct(ProductBase):
     country_id: conint(gt=0)
