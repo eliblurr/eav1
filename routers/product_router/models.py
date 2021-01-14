@@ -21,12 +21,14 @@ class Products(Base):
     weight = Column(Float, nullable=True)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     images = relationship('ProductImages', backref="product", uselist=True, cascade="all, delete")
     reviews = relationship('Reviews', backref="product", uselist=True, cascade="all, delete", lazy='dynamic')
     payment_info = relationship('ProductPaymentInfo', backref="product", uselist=True)
+    
     weight_unit = relationship('WeightUnit', backref="products", uselist=False)
     weight_unit_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
     # backrefs
     # categories
     # board
