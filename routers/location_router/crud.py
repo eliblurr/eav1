@@ -11,7 +11,7 @@ import sys, utils
 import io
 
 supported_ext = ["xls", "xlsx", "xlsm", "xlsb", "xltx", "xltm", "xls", "xlt", "xml", "xlam", "xla", "xlw", "xlr", "csv"]
-header = ['CITY', 'COUNTRY', 'SUB_COUNTRY', 'GEO_ID']
+header = ['CITY', 'COUNTRY', 'SUB_COUNTRY', 'GEO_ID', 'CURRENCY_ID', 'WEIGHT_ID']
 
 # country
 async def create_country(payload: schemas.CreateCountry, db: Session):
@@ -237,7 +237,11 @@ async def create_location_from_file(file, db: Session):
             if sub_country is None:
                 country = db.query(models.Country).filter(models.Country.name == item[1]).first()
                 if country is None:
-                    country = models.Country(name=item[1])
+                    res = (await read_currency_by_id(item[4], db), await read_weight_unit_by_id(item[5], db))
+                    if not all(res):
+                        detail = "{} not found".format('currency' if not res[0] else 'weight')
+                        raise NotFoundError()
+                    country = models.Country(name=item[1], currency_id=item[4], weight_unit_id=item[5])
                     db.add(country)
                     db.flush()
                 sub_country = models.SubCountry(name=item[2], country_id=country.id)
@@ -252,12 +256,17 @@ async def create_location_from_file(file, db: Session):
                 continue
         db.commit()
         return True
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail=detail)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500)
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
  
+class NotFoundError(Exception):
+    def __init__(self):
+        pass
