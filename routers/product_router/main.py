@@ -6,12 +6,12 @@ from main import get_db
 
 router = APIRouter()
 
-# @router.post("/", description="create new product", status_code=status.HTTP_201_CREATED)
-# async def create_product(payload:schemas.CreateProduct, images:str=None, db:Session=Depends(get_db)):
-#     return await crud.aa(db)
+@router.post("/money", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.A)
+async def create_product(db:Session=Depends(get_db)):
+    # return await crud.aa(db)
 #     # , response_model=schemas.A
 #     # payload: schemas.CreateProduct
-#     return {"a":54, "code":"USD"}
+    return {"a":54, "code":"GBP"}
 #     from money.money import Money
 #     from money.currency import Currency
 #     m = Money('9.95', Currency.GBP)

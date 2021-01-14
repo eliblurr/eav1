@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 # from compress import Compressor
 from typing import Optional
 import shutil, logging, jwt, os, string, random
+from constants import switcher
 
 SECRET_KEY = "fsdfsdfsdfsdflhiugysadf87w940e-=r0werpolwe$16$5*dfsdfsdf&&#$rrr$$)7a9563OO93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -117,13 +118,6 @@ async def string_list_to_int_list(str_list:list):
             int_list.append(int(item))
     return int_list
 
-# def string_to_int_list(str_list:list):
-#     int_list = []
-#     for item in str_list:
-#         if item.isdigit():
-#             int_list.append(int(item))
-#     return int_list
-
 def get_exceptions_logger():
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -132,3 +126,6 @@ def get_exceptions_logger():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
+
+def get_currency(code):
+    return switcher.get(code)
