@@ -5,8 +5,6 @@ from typing import List
 from main import get_db
 
 router = APIRouter()
-router2 = APIRouter()
-router3 = APIRouter()
 
 @router.post("/", description="create new Location",response_model=schemas.Location, status_code=status.HTTP_201_CREATED)
 async def create_location(payload: schemas.CreateLocation, db: Session= Depends(get_db)):
@@ -35,6 +33,8 @@ async def update_location(id: int, payload: schemas.UpdateLocation, db: Session 
 async def delete_location(id: List[int], db: Session = Depends(get_db)):
     return await crud.delete_location(id, db)
 
+router2 = APIRouter()
+
 @router2.post("/", description="create new country", response_model=schemas.Country, status_code=status.HTTP_201_CREATED)
 async def create_country(payload: schemas.CreateCountry, db: Session=Depends(get_db)):
     return await crud.create_country(payload, db)
@@ -61,6 +61,8 @@ async def update_country(id: int, payload: schemas.UpdateCountry, db: Session=De
 @router2.delete("/{id}", description="delete country", status_code = status.HTTP_202_ACCEPTED)
 async def delete_country(ids: List[int], db: Session=Depends(get_db)):
     return await crud.delete_country(ids, db)
+
+router3 = APIRouter()
 
 @router3.post("/", description="create sub country", response_model=schemas.SubCountry, status_code=status.HTTP_201_CREATED)
 async def create_sub_country(payload: schemas.CreateSubCountry, db: Session=Depends(get_db)):

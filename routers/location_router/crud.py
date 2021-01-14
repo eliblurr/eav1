@@ -1,3 +1,4 @@
+from ..weight_unit_router.crud import read_weight_unit_by_id
 from ..currency_router.crud import read_currency_by_id
 from fastapi import Depends, HTTPException
 from sqlalchemy import exc, inspect
@@ -6,7 +7,7 @@ from . import models, schemas
 from typing import List
 import pandas as pd
 import numpy as np
-import sys
+import sys, utils
 import io
 
 supported_ext = ["xls", "xlsx", "xlsm", "xlsb", "xltx", "xltm", "xls", "xlt", "xml", "xlam", "xla", "xlw", "xlr", "csv"]
@@ -14,8 +15,9 @@ header = ['CITY', 'COUNTRY', 'SUB_COUNTRY', 'GEO_ID']
 
 # country
 async def create_country(payload: schemas.CreateCountry, db: Session):
-    if not await read_currency_by_id(payload.currency_id, db):
-        raise HTTPException(status_code=404, detail="currency not found")
+    res = (await read_currency_by_id(payload.currency_id, db), await read_weight_unit_by_id(payload.weight_unit_id, db))
+    if not all(res):
+        raise HTTPException(status_code=404, detail="{} not found".format('currency' if not res[0] else 'weight'))
     try:
         country = models.Country(**payload.dict()) 
         db.add(country)
@@ -44,17 +46,17 @@ async def read_country_by_id(id: int, db: Session):
     return db.query(models.Country).filter(models.Country.id == id).first()
 
 async def update_country(id: int, payload: schemas.UpdateCountry, db: Session):
-    if await read_country_by_id(id, db) is None:
-        raise HTTPException(status_code=404)
-    if payload.currency_id and await read_currency_by_id(payload.currency_id, db):
-        raise HTTPException(status_code=404, detail="currency not found")
+    res = (await read_country_by_id(id, db), not(utils.logical_xor(payload.currency_id, await read_currency_by_id(payload.currency_id, db))), not(utils.logical_xor(payload.weight_unit_id, await read_weight_unit_by_id(payload.weight_unit_id, db))))
+    if not all(res):
+        raise HTTPException(status_code=404, detail="{} not found".format('country' if not res[0] else 'currency' if not res[1] else 'weight'))
     try:
-        updated = db.query(models.Country).filter(models.Country.id == id).update(payload.dict(exclude_unset=True))
+        updated = db.query(models.Country).filter(models.Country.id==id).update(payload.dict(exclude_unset=True))
         db.commit()
         if bool(updated):
             return await read_country_by_id(id, db)
     except:
         db.rollback()
+        print("{}".format(sys.exc_info()))
         raise HTTPException(status_code = 500)
 
 async def delete_country(ids: List[int], db: Session):

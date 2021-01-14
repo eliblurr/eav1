@@ -27,7 +27,6 @@ class Products(Base):
     weight_unit = relationship('WeightUnit', backref="products", uselist=False)
     weight_unit_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
     # backrefs
     # categories
     # board

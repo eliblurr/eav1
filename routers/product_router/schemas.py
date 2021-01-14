@@ -121,9 +121,9 @@ def get_currency(code):
     switcher = {
         'ALL': Currency.ALL, 'AMD': Currency.AMD, 'ANG': Currency.ANG, 'AOA': Currency.AOA, 'ARS': Currency.ARS, 
         'AUD': Currency.AUD, 'AWG': Currency.AWG, 'AZN': Currency.AZN, 'BAM': Currency.BAM, 'BBD': Currency.BBD, 
-        'BDT': Currency.BDT, 'BGN': Currency.BGN, 'BHD': Currency.GBP, 'BIF': Currency.GBP, 'BMD': Currency.GBP, 
-        'BND': Currency.GBP, 'BOB': Currency.GBP, 'BOV': Currency.GBP, 'BRL': Currency.GBP, 'BSD': Currency.GBP, 
-        'BTN': Currency.GBP, 'BWP': Currency.GBP, 'BYN': Currency.GBP, 'BYR': Currency.GBP, 'BZD': Currency.GBP, 
+        'BDT': Currency.BDT, 'BGN': Currency.BGN, 'BHD': Currency.BHD, 'BIF': Currency.BIF, 'BMD': Currency.BMD, 
+        'BND': Currency.BND, 'BOB': Currency.BOB, 'BOV': Currency.BOV, 'BRL': Currency.BRL, 'BSD': Currency.BSD, 
+        'BTN': Currency.BTN, 'BWP': Currency.BWP, 'BYN': Currency.BYN, 'BYR': Currency.BYR, 'BZD': Currency.BZD, 
         'CDF': Currency.GBP, 'CHE': Currency.GBP, 'CHF': Currency.GBP, 'CHW': Currency.GBP, 'CLF': Currency.GBP, 
         'CLP': Currency.GBP, 'CNY': Currency.GBP, 'COP': Currency.GBP, 'COU': Currency.GBP, 'CAD': Currency.GBP, 
         'CRC': Currency.GBP, 'CUC': Currency.GBP, 'CUP': Currency.GBP, 'CVE': Currency.GBP, 'CZK': Currency.GBP, 

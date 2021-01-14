@@ -1,6 +1,7 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship, backref
 # from ..delivery_router.models import DeliveryOption
+from ..weight_unit_router.models import WeightUnit
 from ..currency_router.models import Currency
 from ..product_router.models import Products
 from database import Base, SessionLocal
@@ -17,6 +18,8 @@ class Country(Base):
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     currency = relationship('Currency', backref="locations")
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    weight_unit = relationship('WeightUnit', backref="locations")
+    weight_unit_id = Column(Integer, ForeignKey("weight_unit.id"), nullable=False)
 
 class SubCountry(Base):
     __tablename__ = "sub_countries"
