@@ -43,13 +43,13 @@ class ProductPaymentInfoBase(BaseModel):
 
 class CreateProductPaymentInfo(ProductPaymentInfoBase):
     duration: Optional[conint(gt=0)]
-    purchase_type_id: int
+    purchase_type_id: conint(gt=0)
     
 class UpdateProductPaymentInfo(BaseModel):
     batch_price: Optional[float]
     batch_size: Optional[conint(gt=0)]
     duration: Optional[conint(gt=0)]
-    purchase_type_id: Optional[int]
+    purchase_type_id: Optional[conint(gt=0)]
 
 class ProductPaymentInfo(ProductPaymentInfoBase):
     id: int
@@ -66,20 +66,27 @@ class ProductBase(BaseModel):
     metatitle: Optional[str]
     description: str
     serial_number: Optional[str]
-    available_quantity: Optional[int]
-    initial_quantity: int
-    wholesale_price: Optional[float]
-    wholesale_quantity: Optional[int]
+    initial_quantity: conint(gt=0)
+    available_quantity: Optional[conint(gt=0)]
     status: Optional[bool]
     weight: Optional[float]
-    weight_unit_id: Optional[conint(gt=0)]
     owner_id: conint(gt=0)
+    # weight_unit_id: Optional[conint(gt=0)]
+    # wholesale_price: Optional[conint(gt=0)]
+    # wholesale_quantity: Optional[conint(gt=0)]
     
 class CreateProduct(ProductBase):
-    category_ids: List[int]
-    event_ids: List[int]
-    location_ids: List[int]
+    country_id: conint(gt=0)
+    category_ids: List[conint(gt=0)]
+    event_ids: List[conint(gt=0)]
+    location_ids: List[conint(gt=0)]
     payment_info: CreateProductPaymentInfo
+
+    @validator('available_quantity')
+    def assign_quantity(cls, v, values):
+        if 'initial_quantity' in values and v > values['initial_quantity']:
+            v = values['initial_quantity']
+        return v
 
     @classmethod
     def as_form(cls, title: str = Form(...), metatitle: str = Form(None), description: str = Form(...), unit_price: float = Form(...), serial_number: str = Form(None), available_quantity: int = Form(None), initial_quantity:int = Form(...), wholesale_price:float=Form(None), wholesale_quantity:int=Form(None), status:bool=Form(True), weight:float=Form(None), purchase_type_id:int=Form(...), weight_unit_id:int=Form(None), owner_id:int=Form(...), currency_id:int=Form(...), category_ids: List[int] = Form(...), event_ids: List[int] = Form(...),location_ids: List[int] = Form(...) ):

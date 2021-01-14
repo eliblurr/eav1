@@ -1,11 +1,12 @@
 from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..weight_unit_router.crud import read_weight_unit_by_id
-from ..location_router.crud import read_location_by_id
+from ..location_router.crud import read_location_by_id, read_country_by_id
 from ..currency_router.crud import read_currency_by_id
+# from ..category_router.crud import read_category_by_id
 from helper import ImageIO, FolderIO, ImageFolderIO
 from ..category_router.models import Categories
 from ..users_router.crud import read_user_by_id
-from ..location_router.models import Location
+from ..location_router.models import Location, Country, SubCountry
 from ..reviews_router.models import Reviews
 from fastapi import Depends, HTTPException
 from ..events_router.models import Events
@@ -22,62 +23,91 @@ folder_io = FolderIO(product_DIR)
 image_folder_io = ImageFolderIO(product_DIR, 15, folder_io, 'products')
 
 async def create_product(payload: schemas.CreateProduct, images, db: Session):
-    return
-    results = (await read_purchase_type_by_id(payload.purchase_type_id, db) is not None, await read_currency_by_id(payload.currency_id, db) is not None, await read_user_by_id(payload.owner_id, db) is not None)
-    if all(results):
-        pass
-    else:
-        raise HTTPException(status_code=404, detail="{} not found".format('purchase_type' if not(results[0]) else 'currency' if not(results[1]) else 'user'))
-    
-    results = (not(utils.logical_xor(payload.wholesale_price, payload.wholesale_quantity)), not(utils.logical_xor(payload.weight, payload.weight_unit_id)))
-    if all(results):
-        pass
-    else:
-        raise HTTPException(status_code=400)
-    
-    if bool(payload.weight_unit_id) and await read_weight_unit_by_id(payload.weight_unit_id, db) is None:
-        raise HTTPException(status_code=404)
-
+    country = await read_country_by_id(payload.country_id, db)
+    res = ( country, await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db), await read_user_by_id(payload.owner_id, db) )
+    if not all(res):
+        raise HTTPException(status_code=404, detail='{} not found'.format('country' if not res[0] else 'purchase type' if not res[0] else 'user'))
     try:
-        urls, folder_name = await image_folder_io.create(images, 700, 500)
-        if payload.available_quantity is None:
-            payload.available_quantity = payload.initial_quantity
-        product_dict = {k:v for (k,v) in payload.dict().items() if k != 'category_ids' and k != 'event_ids' and k != 'location_ids'}
-        new_product = models.Products(**product_dict)
-        db.add(new_product) 
+        # urls, folder_name = await image_folder_io.create(images, 700, 500)
+        locations = db.query(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
+        payment_info = models.ProductPaymentInfo(**payload.payment_info.dict(), currency_id=country.currency_id)
+        new_product = models.Products( **payload.dict(exclude={'category_ids', 'event_ids', 'location_ids', 'payment_info', 'country_id'}),  weight_unit_id=country.weight_unit_id)
+        db.add(new_product)
+        new_product.payment_info.append(payment_info)
         db.flush()
 
+        # append to category
         for id in payload.category_ids:
-            category = db.query(Categories).filter(Categories.id == id).first()
-            if category is not None:
+            category = db.query(Categories).filter(Categories.id==id).first()
+            if category:
                 new_product.categories.append(category)
-
+        # append to event
         for id in payload.event_ids:
             event = db.query(Events).filter(Events.id == id).first()
-            if event is not None:
+            if event:
                 new_product.events.append(event)
-
+        # append to location
         for id in payload.location_ids:
             location = db.query(Location).filter(Location.id == id).first()
-            if location is not None:
-                new_product.locations.append(location)     
+            if location in locations.all():
+                new_product.locations.append(location) 
 
-        for url in urls:
-            url = models.ProductImages(image_url=url, folder_name=folder_name)
-            new_product.images.append(url)
-
-        db.commit()
-        db.refresh(new_product)
-        return new_product
-
+        # append images
+        # for url in urls:
+        #     url = models.ProductImages(image_url=url, folder_name=folder_name)
+        #     new_product.images.append(url)
+                # print('sd')
+                # pass
+        
+        # db.commit()
+        # db.refresh(new_product)
+        # return new_product
     except exc.IntegrityError:
         db.rollback()    
         print("{}".format(sys.exc_info()))        
-        raise HTTPException(status_code=409)  
+        raise HTTPException(status_code=409)
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
+    # try:
+    #     urls, folder_name = await image_folder_io.create(images, 700, 500)
+    #     product_dict = {k:v for (k,v) in payload.dict().items() if k != 'category_ids' and k != 'event_ids' and k != 'location_ids'}
+    #     new_product = models.Products(**product_dict)
+    #     db.add(new_product) 
+    #     db.flush()
+
+        # for id in payload.category_ids:
+        #     category = db.query(Categories).filter(Categories.id == id).first()
+        #     if category is not None:
+        #         new_product.categories.append(category)
+
+    #     for id in payload.event_ids:
+    #         event = db.query(Events).filter(Events.id == id).first()
+    #         if event is not None:
+    #             new_product.events.append(event)
+
+    #     for id in payload.location_ids:
+    #         location = db.query(Location).filter(Location.id == id).first()
+    #         if location is not None:
+    #             new_product.locations.append(location)     
+
+    #     for url in urls:
+    #         url = models.ProductImages(image_url=url, folder_name=folder_name)
+    #         new_product.images.append(url)
+
+    #     db.commit()
+    #     db.refresh(new_product)
+    #     return new_product
+
+    # except exc.IntegrityError:
+    #     db.rollback()    
+    #     print("{}".format(sys.exc_info()))        
+    #     raise HTTPException(status_code=409)  
+    # except:
+    #     db.rollback()
+    #     print("{}".format(sys.exc_info()))
+    #     raise HTTPException(status_code=500)
 
 async def read_products(skip, limit, search, value, location_id, db: Session): 
     pass
@@ -183,3 +213,12 @@ async def remove_product_image(id: int, db:Session):
     #     db.rollback()
     #     print("{}".format(sys.exc_info()))
     #     raise HTTPException(status_code=500)
+
+
+async def aa(db: Session):
+    loc = await read_location_by_id(3, db)
+    print(loc.sub_country.country.currency.title)
+    print(loc.sub_country.country.currency.symbol)
+    print(loc.sub_country.country.weight_unit.title)
+    print(loc.sub_country.country.weight_unit.symbol)
+    return 
