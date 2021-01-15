@@ -20,5 +20,5 @@ class PurchaseType(Base):
 @event.listens_for(PurchaseType.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
     db = SessionLocal()
-    db.add_all([ PurchaseType(title='rental'), PurchaseType(title='purchase'), PurchaseType(title='both') ])
+    db.add_all([ PurchaseType(title='rental'), PurchaseType(title='purchase') ])
     db.commit()

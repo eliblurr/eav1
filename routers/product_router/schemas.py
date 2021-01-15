@@ -6,7 +6,7 @@ from ..reviews_router.schemas import Review
 from pydantic import BaseModel, conint, Field, validator
 from typing import List, Optional
 from fastapi import Form
-import datetime, utils
+import datetime, utils, collections
 from money.money import Money
 
 cc = lambda code : utils.get_currency(code)
@@ -49,6 +49,7 @@ class CreateProductPaymentInfo(ProductPaymentInfoBase):
     purchase_type_id: conint(gt=0)
     
 class UpdateProductPaymentInfo(BaseModel):
+    id:conint(gt=0)
     batch_price: Optional[float]
     batch_size: Optional[conint(gt=0)]
     duration: Optional[conint(gt=0)]
@@ -80,12 +81,22 @@ class CreateProduct(ProductBase):
     category_ids: List[conint(gt=0)]
     event_ids: List[conint(gt=0)]
     location_ids: List[conint(gt=0)]
-    payment_info: CreateProductPaymentInfo
+    # payment_info: CreateProductPaymentInfo
+    payment_info: List[CreateProductPaymentInfo]
 
     @validator('available_quantity')
     def assign_quantity(cls, v, values):
         if 'initial_quantity' in values and v > values['initial_quantity']:
             v = values['initial_quantity']
+        return v
+    
+    @validator('payment_info')
+    def unique_purchase_type(cls, v, values):
+        _hldr= []
+        for item in v:
+            _hldr.append(item.purchase_type_id)
+        if len([item for item, count in collections.Counter(_hldr).items() if count > 1]):
+            raise ValueError('purchase type should be one of each')
         return v
     
     @classmethod
@@ -100,14 +111,14 @@ class CreateProduct(ProductBase):
         status:bool=Form(True),
         country_id:conint(gt=0)=Form(...),
         weight:Optional[float]=Form(None),
-        batch_size:conint(gt=0)=Form(...),
-        batch_price:float=Form(...),
-        purchase_type_id:conint(gt=0)=Form(...),
         event_ids:List[str]=Form(...),
         category_ids:List[str]=Form(...),
         location_ids:List[str]=Form(...),
         available_quantity:Optional[conint(gt=0)]=Form(None),
-        duration:Optional[conint(gt=0)]=Form(None)
+        duration:Optional[conint(gt=0)]=Form(None),
+        batch_size:conint(gt=0)=Form(...),
+        batch_price:float=Form(...),
+        purchase_type_id:conint(gt=0)=Form(...)
     ):
         location_ids = await utils.string_list_to_int_list(location_ids[0].split(","))
         event_ids = await utils.string_list_to_int_list(event_ids[0].split(","))
@@ -136,17 +147,14 @@ class UpdateProduct(BaseModel):
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
-    unit_price: Optional[float]
     serial_number: Optional[str]
-    available_quantity: Optional[int]
-    initial_quantity: Optional[int]
-    wholesale_price: Optional[float]
-    wholesale_quantity: Optional[int]
+    initial_quantity: Optional[conint(gt=0)]
+    available_quantity: Optional[conint(gt=0)]
     status: Optional[bool]
     weight: Optional[float]
-    purchase_type_id: Optional[int]
-    weight_unit_id: Optional[int]
-    currency_id: Optional[int]
+    # owner_id: Optional[conint(gt=0)]
+    # country_id: Optional[conint(gt=0)]
+    payment_info: Optional[UpdateProductPaymentInfo]
 
 class Product(ProductBase):
     id: int
@@ -169,3 +177,39 @@ class A(BaseModel):
         if value and values['code']:
             return Money(value, cc(values['code'])).format('en_US')
         return value
+
+class B(BaseModel):
+    code: str
+    a:int
+
+    @classmethod
+    def as_form(
+        cls,
+        code:str=Form(...),
+        a:int=Form(...)
+    ):
+        return cls(
+            code=code,
+            a=a
+        )
+
+class C(BaseModel):
+    jj:str
+    ll: str
+    # B:List[B]
+
+    @classmethod
+    def as_form(
+        cls,
+        jj:str=Form(...),
+        ll:str=Form(...),
+        kkk:str=Form(None),
+        B:B=Form(None)
+        # B:B=B.as_form
+        # B:List[B]=Form(...)
+    ):
+        return cls(
+            jj=jj,
+            ll=ll,
+            # B=B
+        )

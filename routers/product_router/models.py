@@ -50,6 +50,7 @@ class ProductPaymentInfo(Base):
     __tablename__ = "product_payment_info"
     __table_args__ = ( UniqueConstraint('product_id', 'purchase_type_id', name='_product_purchase_'), )
 
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     duration = Column(Integer, nullable=True)
     batch_price = Column(Float, nullable=False)
     batch_size = Column(Integer, nullable=False)
