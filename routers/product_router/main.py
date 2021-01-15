@@ -71,3 +71,7 @@ async def create_product(payload:schemas.CreateProduct, images:str=None, db: Ses
 @router.post('/kljkj')
 async def aa(payload=Depends(schemas.C.as_form)):
     return payload
+
+@router.post('/sdjhdskds')
+async def aa(payload=Depends(schemas.K.as_form)):
+    return payload

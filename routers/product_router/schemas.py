@@ -178,6 +178,8 @@ class A(BaseModel):
             return Money(value, cc(values['code'])).format('en_US')
         return value
 
+from fastapi import Depends
+
 class B(BaseModel):
     code: str
     a:int
@@ -186,7 +188,7 @@ class B(BaseModel):
     def as_form(
         cls,
         code:str=Form(...),
-        a:int=Form(...)
+        a:int=Form(...),
     ):
         return cls(
             code=code,
@@ -196,20 +198,36 @@ class B(BaseModel):
 class C(BaseModel):
     jj:str
     ll: str
-    # B:List[B]
+    B:B
+    # D:Optional[List[B]]
 
     @classmethod
     def as_form(
         cls,
-        jj:str=Form(...),
-        ll:str=Form(...),
-        kkk:str=Form(None),
-        B:B=Form(None)
-        # B:B=B.as_form
-        # B:List[B]=Form(...)
+        k:int=Form(None),
+        # jj:str=Form(...),
+        # ll:str=Form(...),
+        # kkk:str=Form(None),
+        # G=Depends(B.as_form),
+        B:List[B]=Form(...)
+        # B=Depends(B.as_form),
     ):
-        return cls(
-            jj=jj,
-            ll=ll,
-            # B=B
-        )
+        print(dir(B))
+        print(B.json)
+        return
+        #  cls(
+        #     jj=jj,
+        #     ll=ll,
+        #     # B=B
+        # )
+
+class K(BaseModel):
+    pass
+
+    @classmethod
+    def as_form(
+        cls,
+        jj:B=Form(...),
+
+    ):
+        return
