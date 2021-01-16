@@ -24,15 +24,27 @@ image_folder_io = ImageFolderIO(product_DIR, 15, folder_io, 'products')
 
 async def create_product(payload: schemas.CreateProduct, images, db: Session):
     country = await read_country_by_id(payload.country_id, db)
-    res = ( country, await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db), await read_user_by_id(payload.owner_id, db) )
+    res = ( country, await read_user_by_id(payload.owner_id, db) )
     if not all(res):
-        raise HTTPException(status_code=404, detail='{} not found'.format('country' if not res[0] else 'purchase type' if not res[0] else 'user'))
+        raise HTTPException(status_code=404, detail='{} not found'.format('country' if not res[0] else 'user'))
     try:
-        # urls, folder_name = await image_folder_io.create(images, 700, 500)
+        urls, folder_name = await image_folder_io.create(images, 700, 500)
         new_product = models.Products( **payload.dict(exclude={'category_ids', 'event_ids', 'location_ids', 'payment_info', 'country_id'}),  weight_unit_id=country.weight_unit_id)
         db.add(new_product)
-        payment_info = models.ProductPaymentInfo(**payload.payment_info.dict(), currency_id=country.currency_id)
-        new_product.payment_info.append(payment_info)
+        #  await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db),
+        for purchase_type in payload.payment_info:
+            if await read_purchase_type_by_id(purchase_type.purchase_type_id, db):
+                payment_info = models.ProductPaymentInfo(**purchase_type.dict(), currency_id=country.currency_id)
+                new_product.payment_info.append(payment_info)
+
+            # print(payload.payment_info)
+            # print(purchase_type.purchase_type_id)
+                # print(type(payment_info))
+                # print(payment_info.purchase_type_id)
+                # print(payment_info.currency_id)
+                
+        # return
+        
         db.flush()
         # append to category
         for id in payload.category_ids:
@@ -51,14 +63,13 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
             if location in locations.all():
                 new_product.locations.append(location) 
         # append images
-        urls=[]
         for url in urls:
             url = models.ProductImages(image_url=url, folder_name=folder_name)
             new_product.images.append(url)
         
-        # db.commit()
-        # db.refresh(new_product)
-        # return new_product
+        db.commit()
+        db.refresh(new_product)
+        return new_product
     except exc.IntegrityError:
         db.rollback()    
         print("{}".format(sys.exc_info()))        
@@ -123,17 +134,24 @@ async def read_product_by_id(id: int, db: Session):
     return db.query(models.Products).filter(models.Products.id==id).first()
 
 async def update_product(id: int, payload: schemas.UpdateProduct, db: Session):
-    if not await read_product_by_id(id, db):
+    product = await read_product_by_id(id, db)
+    if not product:
         raise HTTPException(status_code=404)
     try: 
         if payload.payment_info:
             if payload.payment_info.purchase_type_id and not await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db):
-                raise HTTPException(status_code=404, detail="purchase type not found")
-            db.query(models.ProductPaymentInfo).filter(models.ProductPaymentInfo.id==payload.payment_info).update(payload.payment_info.dict(exclude={'id','purchase_type_id'}, exclude_unset=True))
+                detail = "purchase type not found"
+                raise NotFoundError()
+            # db.query(models.ProductPaymentInfo)
+            # product.payment_info
+            product.payment_info.filter(models.ProductPaymentInfo.batch_price==payload.payment_info.payment_info_id).update(payload.payment_info.dict(exclude={'payment_info_id','purchase_type_id'}, exclude_unset=True))
+            return
         updated = db.query(models.Products).filter(models.Products.id==id).update(payload.dict(exclude={'payment_info'}, exclude_unset=True))
         db.commit()
         if bool(updated):
             return await read_product_by_id(id, db)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail=detail)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -157,54 +175,52 @@ async def delete_product(id: int, db: Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-#///////////////
-
 async def read_product_review(id: int, skip: int, limit: int, search: str, value: str, db: Session):
-    pass
-#     base = await read_product_by_id(id, db)
-#     if not base:
-#         raise HTTPException(status_code=404)
-#     if search and value:
-#         try:
-#             base = base.filter(models.Reviews.__table__.c[search].like("%" + value + "%"))
-#         except KeyError:
-#             return base.reviews.offset(skip).limit(limit).all()
-#     return base.reviews.offset(skip).limit(limit).all()
+    base = await read_product_by_id(id, db)
+    if not base:
+        raise HTTPException(status_code=404)
+    if search and value:
+        try:
+            base = base.filter(models.Reviews.__table__.c[search].like("%" + value + "%"))
+        except KeyError:
+            return base.reviews.offset(skip).limit(limit).all()
+    return base.reviews.offset(skip).limit(limit).all()
 
 async def add_product_image(id: int, images, db: Session):  
-    pass
-#     product = await read_product_by_id(id, db)  
-#     if not product:
-#         raise HTTPException(status_code=404)
-#     try:
-#         urls, folder_name = await image_folder_io.append_image(product, images, 700, 500)
-#         if urls and folder_name:
-#             for url in urls:
-#                 url = models.ProductImages(image_url=url, folder_name=folder_name)
-#                 product.images.append(url)
-#         db.commit()
-#         db.refresh(product)
-#         return product
-#     except:      
-#         db.rollback()
-#         print("{}".format(sys.exc_info()))
-#         raise HTTPException(status_code=500)
+    product = await read_product_by_id(id, db)  
+    if not product:
+        raise HTTPException(status_code=404)
+    try:
+        urls, folder_name = await image_folder_io.append_image(product, images, 700, 500)
+        if urls and folder_name:
+            for url in urls:
+                url = models.ProductImages(image_url=url, folder_name=folder_name)
+                product.images.append(url)
+        db.commit()
+        db.refresh(product)
+        return product
+    except:      
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 async def remove_product_image(id: int, db:Session):
-    pass
-    # product_image = db.query(models.ProductImages).filter(models.ProductImages.id == id).first()
-    # try: 
-    #     if product_image:
-    #         _ , folder_name, image_name = product_image.image_url.split("/")
-    #         if await utils.file_exists(product_DIR+"/"+folder_name+"/"+image_name) and await utils.delete_file(product_DIR+"/"+folder_name+"/"+image_name):
-    #             db.delete(product_image)
-    #     db.commit()
-    #     return True
-    # except:
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=500)
+    product_image = db.query(models.ProductImages).filter(models.ProductImages.id == id).first()
+    try: 
+        if product_image:
+            _ , folder_name, image_name = product_image.image_url.split("/")
+            if await utils.file_exists(product_DIR+"/"+folder_name+"/"+image_name) and await utils.delete_file(product_DIR+"/"+folder_name+"/"+image_name):
+                db.delete(product_image)
+        db.commit()
+        return True
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
+#///////////////
+
+# add/remove payment_info 
 
 async def aa(db: Session):
     loc = await read_location_by_id(3, db)
@@ -213,3 +229,7 @@ async def aa(db: Session):
     print(loc.sub_country.country.weight_unit.title)
     print(loc.sub_country.country.weight_unit.symbol)
     return 
+
+class NotFoundError(Exception):
+    def __init__(self):
+        pass

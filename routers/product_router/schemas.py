@@ -10,7 +10,7 @@ from typing import List, Optional
 from money.money import Money
 from constants import dict_rx
 
-cc = lambda code : utils.get_currency(code)
+gen_amount = lambda code : utils.get_currency(code)
 
 class ProductImageBase(BaseModel):
     image_url: str
@@ -50,14 +50,14 @@ class CreateProductPaymentInfo(ProductPaymentInfoBase):
     purchase_type_id: conint(gt=0)
     
 class UpdateProductPaymentInfo(BaseModel):
-    id:conint(gt=0)
+    payment_info_id:conint(gt=0) # payment_info_id
     batch_price: Optional[float]
     batch_size: Optional[conint(gt=0)]
     duration: Optional[conint(gt=0)]
     purchase_type_id: Optional[conint(gt=0)]
 
 class ProductPaymentInfo(ProductPaymentInfoBase):
-    id: int
+    id: Optional[int]
     currency: Currency
     purchase_type: PurchaseType
     date_created: datetime.datetime
@@ -115,13 +115,11 @@ class CreateProduct(ProductBase):
         available_quantity:Optional[conint(gt=0)]=Form(None),
         payment_info:List[str]=Form(...)
     ):
-        
         location_ids = await utils.string_list_to_int_list(location_ids[0].split(","))
         event_ids = await utils.string_list_to_int_list(event_ids[0].split(","))
         category_ids = await utils.string_list_to_int_list(category_ids[0].split(","))
         if available_quantity is None or available_quantity>initial_quantity:
             available_quantity=initial_quantity
-        
         holder = re.findall(dict_rx, payment_info[0])
         payment_info = []
         for item in holder:
@@ -162,13 +160,27 @@ class Product(ProductBase):
     id: int
     images: List[ProductImage]
     weight_unit: Optional[WeightUnit]
-    currency: Currency
-    owner_id: int
+    payment_info: List[ProductPaymentInfo]
+    # , ProductPaymentInfo
+    # currency: Currency
+    # owner_id: int
     date_created: datetime.datetime
     date_modified: datetime.datetime
 
     class Config:
         orm_mode = True
+    
+    @validator('payment_info')
+    def payment_info_validation(cls, value):
+        for item in value:
+            print(item.batch_price)
+            print(item.currency.title)
+            item.batch_price = Money(str(item.batch_price), gen_amount(item.currency.title)).format('en_US')
+            # item.currency.title
+            # 
+    #     if value and values['code']:
+    #         return Money(value, gen_amount(values['code'])).format('en_US')
+        return value
 
 # Test Cases
 class A(BaseModel):
@@ -178,7 +190,7 @@ class A(BaseModel):
     @validator('a')
     def duration_validation(cls, value, values):
         if value and values['code']:
-            return Money(value, cc(values['code'])).format('en_US')
+            return Money(value, gen_amount(values['code'])).format('en_US')
         return value
 
 class B(BaseModel):
