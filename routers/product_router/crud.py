@@ -142,10 +142,7 @@ async def update_product(id: int, payload: schemas.UpdateProduct, db: Session):
             if payload.payment_info.purchase_type_id and not await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db):
                 detail = "purchase type not found"
                 raise NotFoundError()
-            # db.query(models.ProductPaymentInfo)
-            # product.payment_info
-            product.payment_info.filter(models.ProductPaymentInfo.batch_price==payload.payment_info.payment_info_id).update(payload.payment_info.dict(exclude={'payment_info_id','purchase_type_id'}, exclude_unset=True))
-            return
+            product.payment_info.filter(models.ProductPaymentInfo.id==payload.payment_info.payment_info_id).update(payload.payment_info.dict(exclude={'payment_info_id','purchase_type_id'}, exclude_unset=True))
         updated = db.query(models.Products).filter(models.Products.id==id).update(payload.dict(exclude={'payment_info'}, exclude_unset=True))
         db.commit()
         if bool(updated):
