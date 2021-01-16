@@ -3,13 +3,12 @@ from ..weight_unit_router.schemas import WeightUnit
 from pydantic import BaseModel, conint, validator
 from ..location_router.schemas import Location
 from ..currency_router.schemas import Currency
+import datetime, utils, collections, ast, re
 from ..reviews_router.schemas import Review
 from fastapi import Form, HTTPException
-import datetime, utils, collections
 from typing import List, Optional
 from money.money import Money
 from constants import dict_rx
-import ast, re
 
 cc = lambda code : utils.get_currency(code)
 
