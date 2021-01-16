@@ -179,6 +179,7 @@ class A(BaseModel):
         return value
 
 from fastapi import Depends
+import ast, json, re
 
 class B(BaseModel):
     code: str
@@ -198,28 +199,85 @@ class B(BaseModel):
 class C(BaseModel):
     jj:str
     ll: str
-    B:B
-    # D:Optional[List[B]]
+    V:List[B]
 
     @classmethod
     def as_form(
         cls,
         k:int=Form(None),
-        # jj:str=Form(...),
-        # ll:str=Form(...),
-        # kkk:str=Form(None),
-        # G=Depends(B.as_form),
-        B:List[B]=Form(...)
-        # B=Depends(B.as_form),
-    ):
-        print(dir(B))
-        print(B.json)
+        V:List[str]=Form(...)
+    ):  
+        holder = []
+        rx = r'(\{[^{}]+\})'
+        d = re.findall(rx, V[0])
+        print(d)
+        # print(type(V)) -> list
+        # print(type(V[0])) -> str
+        # test_list = [“a, t”, “g, f, g”, “w, e”, “d, o”], repl_delim = ‘ ‘
+        # test_list = ["a, t", "g, f, g", "w, e", "d, o"], repl_delim = ""
+        # test_list=['as','asdd'],repl_delim=""
+        # t = ['a','dfs','dfd,df']
+        # x = t, repl_delim='
+        # test_list = ["1-2", "3-4-8-9", "4-10-4"] 
+        # print(*test_list)
+        # print(*V[0])
+
+        # j = [item for item in V[0].split(',')]
+        # print(j)
+
+  
+        # printing original list 
+        # print("The original list is : " + str(test_list)) 
+        
+        # initializing K 
+        # K =  "-"
+        
+        # conversion using split and list comprehension 
+        # int() is used for conversion 
+        # res = [tuple(int(ele) for ele in sub.split(K)) for sub in test_list] 
+        
+        # printing result 
+        # print("The converted tuple list : " + str(res))
+        # print(test_list)
         return
-        #  cls(
-        #     jj=jj,
-        #     ll=ll,
-        #     # B=B
-        # )
+        for item in V[0].split(','):
+        #     print(item)
+            # return
+            # m = {'code':'str','a':1,"j":3}
+            # print(type(m))
+
+            # print(B(**m))
+
+            # try:
+
+            
+
+            # if isinstance(B(**m), B):
+            #     holder.append(B(**m))
+
+            #     print(holder)
+
+            return
+            # if isinstance(ast.literal_eval(m), dict):
+                # try:
+                #     A(**ast.literal_eval(item))
+                # except:
+                #     pass
+                    # raise ValueError('json supplied not supported')
+                # return (ast.literal_eval(item))
+            a = json.loads(item)
+            print(a)
+            print(type(a))
+            b = ast.literal_eval(item)
+            print(type(b))
+            x = isinstance(ast.literal_eval(item), dict)
+            print(x)
+            # assert ast.literal_eval(item)
+            # if assert ast.literal_eval(item)
+            # print(ast.literal_eval(item))
+            # B(item)
+            print(item)
+        return
 
 class K(BaseModel):
     pass
