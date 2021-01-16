@@ -1,14 +1,15 @@
 from ..purchase_type_router.schemas import PurchaseType
 from ..weight_unit_router.schemas import WeightUnit
+from pydantic import BaseModel, conint, validator
 from ..location_router.schemas import Location
 from ..currency_router.schemas import Currency
 from ..reviews_router.schemas import Review
-from pydantic import BaseModel, conint, Field, validator
-from typing import List, Optional
-from fastapi import Form
+from fastapi import Form, HTTPException
 import datetime, utils, collections
+from typing import List, Optional
 from money.money import Money
 from constants import dict_rx
+import ast, re
 
 cc = lambda code : utils.get_currency(code)
 
@@ -153,8 +154,6 @@ class UpdateProduct(BaseModel):
     available_quantity: Optional[conint(gt=0)]
     status: Optional[bool]
     weight: Optional[float]
-    # owner_id: Optional[conint(gt=0)]
-    # country_id: Optional[conint(gt=0)]
     payment_info: Optional[UpdateProductPaymentInfo]
 
 class Product(ProductBase):
@@ -169,6 +168,7 @@ class Product(ProductBase):
     class Config:
         orm_mode = True
 
+# Test Cases
 class A(BaseModel):
     code: str
     a:int
@@ -178,9 +178,6 @@ class A(BaseModel):
         if value and values['code']:
             return Money(value, cc(values['code'])).format('en_US')
         return value
-
-from fastapi import Depends, HTTPException
-import ast, json, re, sys
 
 class B(BaseModel):
     code: str
@@ -221,15 +218,4 @@ class C(BaseModel):
                 pass
         return cls(jj=jj, ll=ll, V=V)
 
-# {'code':'test_string', 'a': 2}
-
-class K(BaseModel):
-    pass
-
-    @classmethod
-    def as_form(
-        cls,
-        jj:B=Form(...),
-
-    ):
-        return
+# {'code':'test_string', 'a': 2} 
