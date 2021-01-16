@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post("/", description="create new product", status_code=status.HTTP_201_CREATED, response_model=schemas.Product)
 async def create_product(payload=Depends(schemas.CreateProduct.as_form), images: List[UploadFile]=File(...), db: Session = Depends(get_db)):
+    return
     return await crud.create_product(payload, images, db)
 
 @router.get("/", description="read products", response_model=List[schemas.Product])

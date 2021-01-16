@@ -3,7 +3,7 @@ from ..weight_unit_router.schemas import WeightUnit
 from pydantic import BaseModel, conint, validator
 from ..location_router.schemas import Location
 from ..currency_router.schemas import Currency
-import datetime, utils, collections, ast, re
+import datetime, utils, collections, ast, re, sys
 from ..reviews_router.schemas import Review
 from fastapi import Form, HTTPException
 from typing import List, Optional
@@ -94,7 +94,7 @@ class CreateProduct(ProductBase):
     def unique_purchase_type(cls, v): 
         test = (len(v), len({v['purchase_type_id']:v for v in [item.dict() for item in v]}.values()) == len(v))
         if not all(test):
-            raise HTTPException(status_code=422, detail="{}".format('V cannot be null' if not test[0] else 'unique constraint failed on a'))
+            raise HTTPException(status_code=422, detail="{}".format('payment info cannot be empty' if not test[0] else 'unique constraint failed on purchase_type_id'))
         return v
  
     @classmethod
@@ -126,7 +126,7 @@ class CreateProduct(ProductBase):
         payment_info = []
         for item in holder:
             try:
-                payment_info.append(B(**ast.literal_eval(item)))
+                payment_info.append(CreateProductPaymentInfo(**ast.literal_eval(item)))
             except:
                 pass
          
@@ -217,6 +217,7 @@ class C(BaseModel):
                 V.append(B(**ast.literal_eval(item)))
             except:
                 pass
+        print(sys)
         return cls(jj=jj, ll=ll, V=V)
 
 # {'code':'test_string', 'a': 2} 
@@ -243,3 +244,27 @@ class C(BaseModel):
 # payment_info = { 'batch_price':batch_price, 'batch_size':batch_size, 'duration':duration, 'purchase_type_id':purchase_type_id }
 # o={v['a']:v for v in [item.dict() for item in v]}.values()
 # payment_info: CreateProductPaymentInfo
+# if sys.version_info[:2]<(2,6):
+#   sys.stderr.write("You need python 2.6 or later to run this script\n")
+#   exit(1)
+# assert sys.version_info >= (2, 5)
+# print ("Hello World!");
+# import sys
+# print(sys.version)
+# print(sys.version[:3])
+# print(sys.version_info[:2])
+# if sys.version_info[:2] == (2, 6):
+#     print('v2')
+# if sys.version_info[:2] == (3, 6):
+#     print('v3')
+# L=[
+#     {'id':1,'name':'john', 'age':34},
+#     {'id':1,'name':'john', 'age':34},
+#     {'id':2,'name':'hanna', 'age':30},
+# ]
+# a={v['id']:v for v in L}.values()
+# b=list({v['id']:v for v in L}.values())
+# print(a)
+# print(b)
+# print(len(a))
+# print(len(b))
