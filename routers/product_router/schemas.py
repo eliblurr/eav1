@@ -8,6 +8,7 @@ from typing import List, Optional
 from fastapi import Form
 import datetime, utils, collections
 from money.money import Money
+from constants import dict_rx
 
 cc = lambda code : utils.get_currency(code)
 
@@ -178,8 +179,8 @@ class A(BaseModel):
             return Money(value, cc(values['code'])).format('en_US')
         return value
 
-from fastapi import Depends
-import ast, json, re
+from fastapi import Depends, HTTPException
+import ast, json, re, sys
 
 class B(BaseModel):
     code: str
@@ -201,83 +202,26 @@ class C(BaseModel):
     ll: str
     V:List[B]
 
+    @validator('V')
+    def v(cls, v):
+        o={v['a']:v for v in [item.dict() for item in v]}.values()
+        test = (len(v), len(o) == len(v))
+        if not all(test):
+            raise HTTPException(status_code=422, detail="{}".format('V cannot be null' if not test[0] else 'unique constraint failed on a'))
+        return v
+
     @classmethod
-    def as_form(
-        cls,
-        k:int=Form(None),
-        V:List[str]=Form(...)
-    ):  
-        holder = []
-        rx = r'(\{[^{}]+\})'
-        d = re.findall(rx, V[0])
-        print(d)
-        # print(type(V)) -> list
-        # print(type(V[0])) -> str
-        # test_list = [“a, t”, “g, f, g”, “w, e”, “d, o”], repl_delim = ‘ ‘
-        # test_list = ["a, t", "g, f, g", "w, e", "d, o"], repl_delim = ""
-        # test_list=['as','asdd'],repl_delim=""
-        # t = ['a','dfs','dfd,df']
-        # x = t, repl_delim='
-        # test_list = ["1-2", "3-4-8-9", "4-10-4"] 
-        # print(*test_list)
-        # print(*V[0])
+    def as_form( cls, jj:str=Form(...), ll:str=Form(...), V:List[str]=Form(...) ):   
+        holder = re.findall(dict_rx, V[0])
+        V = []
+        for item in holder:
+            try:
+                V.append(B(**ast.literal_eval(item)))
+            except:
+                pass
+        return cls(jj=jj, ll=ll, V=V)
 
-        # j = [item for item in V[0].split(',')]
-        # print(j)
-
-  
-        # printing original list 
-        # print("The original list is : " + str(test_list)) 
-        
-        # initializing K 
-        # K =  "-"
-        
-        # conversion using split and list comprehension 
-        # int() is used for conversion 
-        # res = [tuple(int(ele) for ele in sub.split(K)) for sub in test_list] 
-        
-        # printing result 
-        # print("The converted tuple list : " + str(res))
-        # print(test_list)
-        return
-        for item in V[0].split(','):
-        #     print(item)
-            # return
-            # m = {'code':'str','a':1,"j":3}
-            # print(type(m))
-
-            # print(B(**m))
-
-            # try:
-
-            
-
-            # if isinstance(B(**m), B):
-            #     holder.append(B(**m))
-
-            #     print(holder)
-
-            return
-            # if isinstance(ast.literal_eval(m), dict):
-                # try:
-                #     A(**ast.literal_eval(item))
-                # except:
-                #     pass
-                    # raise ValueError('json supplied not supported')
-                # return (ast.literal_eval(item))
-            a = json.loads(item)
-            print(a)
-            print(type(a))
-            b = ast.literal_eval(item)
-            print(type(b))
-            x = isinstance(ast.literal_eval(item), dict)
-            print(x)
-            # assert ast.literal_eval(item)
-            # if assert ast.literal_eval(item)
-            # print(ast.literal_eval(item))
-            # B(item)
-            print(item)
-        return
+# {'code':'test_string', 'a': 2}
 
 class K(BaseModel):
     pass

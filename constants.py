@@ -1,7 +1,7 @@
 from money.currency import Currency
 
 dict_rx = r'(\{[^{}]+\})'
-
+rx = r'(\{[^{}]+\})'
 switcher = {
     'ALL': Currency.ALL, 'AMD': Currency.AMD, 'ANG': Currency.ANG, 'AOA': Currency.AOA, 'ARS': Currency.ARS,
     'AUD': Currency.AUD, 'AWG': Currency.AWG, 'AZN': Currency.AZN, 'BAM': Currency.BAM, 'BBD': Currency.BBD,

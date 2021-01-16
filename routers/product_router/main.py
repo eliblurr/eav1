@@ -62,16 +62,12 @@ async def update_product(id: int, payload: schemas.UpdateProduct, db: Session=De
     # print(dir(m))
 
     # return await crud.create_product(payload, images, db)
-# , response_model=schemas.Product
-@router.post("/kkk", description="create new product", status_code=status.HTTP_201_CREATED)
-async def create_product(payload:schemas.CreateProduct, images:str=None, db: Session=Depends(get_db)):
-    return
+# # , response_model=schemas.Product
+# @router.post("/kkk", description="create new product", status_code=status.HTTP_201_CREATED)
+# async def create_product(payload:schemas.CreateProduct, images:str=None, db: Session=Depends(get_db)):
+#     return
     # return await crud.create_product(payload, images, db)
 
 @router.post('/kljkj')
 async def aa(payload=Depends(schemas.C.as_form)):
-    return payload
-
-@router.post('/sdjhdskds')
-async def aa(payload=Depends(schemas.K.as_form)):
     return payload
