@@ -83,7 +83,6 @@ class CreateProduct(ProductBase):
     category_ids: List[conint(gt=0)]
     event_ids: List[conint(gt=0)]
     location_ids: List[conint(gt=0)]
-    # payment_info: CreateProductPaymentInfo
     payment_info: List[CreateProductPaymentInfo]
 
     @validator('available_quantity')
@@ -93,14 +92,12 @@ class CreateProduct(ProductBase):
         return v
     
     @validator('payment_info')
-    def unique_purchase_type(cls, v, values):
-        _hldr= []
-        for item in v:
-            _hldr.append(item.purchase_type_id)
-        if len([item for item, count in collections.Counter(_hldr).items() if count > 1]):
-            raise ValueError('purchase type should be one of each')
+    def unique_purchase_type(cls, v): 
+        test = (len(v), len({v['purchase_type_id']:v for v in [item.dict() for item in v]}.values()) == len(v))
+        if not all(test):
+            raise HTTPException(status_code=422, detail="{}".format('V cannot be null' if not test[0] else 'unique constraint failed on a'))
         return v
-    
+ 
     @classmethod
     async def as_form(
         cls,
@@ -117,17 +114,23 @@ class CreateProduct(ProductBase):
         category_ids:List[str]=Form(...),
         location_ids:List[str]=Form(...),
         available_quantity:Optional[conint(gt=0)]=Form(None),
-        duration:Optional[conint(gt=0)]=Form(None),
-        batch_size:conint(gt=0)=Form(...),
-        batch_price:float=Form(...),
-        purchase_type_id:conint(gt=0)=Form(...)
+        payment_info:List[str]=Form(...)
     ):
+        
         location_ids = await utils.string_list_to_int_list(location_ids[0].split(","))
         event_ids = await utils.string_list_to_int_list(event_ids[0].split(","))
         category_ids = await utils.string_list_to_int_list(category_ids[0].split(","))
-        payment_info = { 'batch_price':batch_price, 'batch_size':batch_size, 'duration':duration, 'purchase_type_id':purchase_type_id }
         if available_quantity is None or available_quantity>initial_quantity:
             available_quantity=initial_quantity
+        
+        holder = re.findall(dict_rx, payment_info[0])
+        payment_info = []
+        for item in holder:
+            try:
+                payment_info.append(B(**ast.literal_eval(item)))
+            except:
+                pass
+         
         return cls(
             title=title,
             metatitle=metatitle,
@@ -141,8 +144,8 @@ class CreateProduct(ProductBase):
             event_ids=event_ids,
             category_ids=category_ids,
             location_ids=location_ids,
-            payment_info=payment_info,
-            available_quantity=available_quantity
+            available_quantity=available_quantity,
+            payment_info=payment_info
         )
 
 class UpdateProduct(BaseModel):
@@ -201,8 +204,7 @@ class C(BaseModel):
 
     @validator('V')
     def v(cls, v):
-        o={v['a']:v for v in [item.dict() for item in v]}.values()
-        test = (len(v), len(o) == len(v))
+        test = (len(v), len({v['a']:v for v in [item.dict() for item in v]}.values()) == len(v))
         if not all(test):
             raise HTTPException(status_code=422, detail="{}".format('V cannot be null' if not test[0] else 'unique constraint failed on a'))
         return v
@@ -219,3 +221,26 @@ class C(BaseModel):
         return cls(jj=jj, ll=ll, V=V)
 
 # {'code':'test_string', 'a': 2} 
+# {'duration':4, 'batch_size':1, 'batch_price':2.2, 'purchase_type_id':2}
+# duration:Optional[conint(gt=0)]=Form(None),
+# batch_size:conint(gt=0)=Form(...),
+# batch_price:float=Form(...),
+# purchase_type_id:conint(gt=0)=Form(...)
+# o={v['purchase_type_id']:v for v in [item.dict() for item in v]}.values()
+# @validator('V')
+# def v(cls, v):
+#     o={v['a']:v for v in [item.dict() for item in v]}.values()
+#     test = (len(v), len(o) == len(v))
+#     if not all(test):
+#         raise HTTPException(status_code=422, detail="{}".format('V cannot be null' if not test[0] else 'unique constraint failed on a'))
+#     return v
+# /////////////
+# _hldr= []
+# for item in v:
+#     _hldr.append(item.purchase_type_id)
+# if len([item for item, count in collections.Counter(_hldr).items() if count > 1]):
+#     raise ValueError('purchase type should be one of each')
+# return v
+# payment_info = { 'batch_price':batch_price, 'batch_size':batch_size, 'duration':duration, 'purchase_type_id':purchase_type_id }
+# o={v['a']:v for v in [item.dict() for item in v]}.values()
+# payment_info: CreateProductPaymentInfo
