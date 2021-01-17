@@ -40,3 +40,7 @@ async def delete_product(id: int, db: Session=Depends(get_db)):
 @router.delete("/images/{id}", description="delete product image", status_code=status.HTTP_202_ACCEPTED )
 async def remove_product_image(id: int, db:Session=Depends(get_db)):
     return await crud.remove_product_image(id, db)
+
+@router.put("{id}/payment_info/{payment_info_id}", description="add/delete payment info for a product", status_code=status.HTTP_202_ACCEPTED)
+async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session=Depends(get_db)):
+    return await crud.toggle_product_payment_info(id, payment_info_id, db):

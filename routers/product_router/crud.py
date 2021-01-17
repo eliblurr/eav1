@@ -217,6 +217,28 @@ async def remove_product_image(id: int, db:Session):
 
 #///////////////
 
+async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session):
+    product = await read_product_by_id(id, db)
+    if not product:
+        raise HTTPException(status_code=404)
+    try:
+        payment_info = db.query(models.ProductPaymentInfo).filter(models.ProductPaymentInfo.id==payment_info_id).first()
+        if payment_info in product.payment_info:
+            product.payment_info.remove(payment_info)
+        else:
+            product.payment_info.append(payment_info)
+        db.commit()
+        db.refresh(product)
+        return product
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
+
 # add/remove payment_info 
 
 async def aa(db: Session):
