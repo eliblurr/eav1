@@ -1,6 +1,6 @@
 from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..weight_unit_router.crud import read_weight_unit_by_id
-from ..location_router.crud import read_location_by_id, read_country_by_id
+from ..location_router.crud import read_location_by_id, read_country_by_id, read_sub_country_by_id
 from ..currency_router.crud import read_currency_by_id
 # from ..category_router.crud import read_category_by_id
 from helper import ImageIO, FolderIO, ImageFolderIO
@@ -70,16 +70,12 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
 
 async def read_products(skip, limit, search, value, location_id, sub_country_id, country_id,db: Session): 
     base = db.query(models.Products)
-    if country_id:
+    if country_id and await read_country_by_id(country_id, db):
         base = base.join(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
-    elif sub_country_id:
+    elif sub_country_id and await read_sub_country_by_id(sub_country_id, db):
         base = base.join(Location).join(SubCountry).filter(SubCountry.id == sub_country_id)
-    elif location_id:
+    elif location_id and await read_location_by_id(location_id, db):
         base = base.join(Location).filter(Location.id == location_id)
-    # if location_id:
-    #     location = await read_location_by_id(location_id, db)
-    #     if location is not None:
-    #         base = location.location_items
     if search and value:
         try:
             base = base.filter(models.Products.__table__.c[search].like("%" + value + "%"))
