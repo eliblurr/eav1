@@ -118,12 +118,18 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     pass
 
 async def read_orders():
+    # location/country/sub_country -> [Delivery]
+    # order state
+    # user
     pass
 
 async def read_order_by_id():
     pass
 
 async def update_order():
+    pass
+
+async def update_order_state():
     pass
 
 async def delete_order():
