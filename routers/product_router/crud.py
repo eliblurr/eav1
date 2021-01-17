@@ -195,13 +195,3 @@ async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session):
 class NotFoundError(Exception):
     def __init__(self):
         pass
-
-#///////////////
-
-async def aa(db: Session):
-    loc = await read_location_by_id(3, db)
-    print(loc.sub_country.country.currency.title)
-    print(loc.sub_country.country.currency.symbol)
-    print(loc.sub_country.country.weight_unit.title)
-    print(loc.sub_country.country.weight_unit.symbol)
-    return 
