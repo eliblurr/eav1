@@ -124,7 +124,7 @@ api.include_router(product.router,prefix="/api/products",tags=["product"])
 # api.include_router(boards.router,prefix="/api/boards",tags=["boards"])
 # api.include_router(events.router,prefix="/api/events",tags=["events"])
 # api.include_router(order.router,prefix="/api/orders",tags=["orders"])
-# api.include_router(users.router,prefix="/api/users",tags=["user"])
+api.include_router(users.router,prefix="/api/users",tags=["user"])
 # api.include_router(faqs.router,prefix="/api/faqs",tags=["faqs"])
 # api.include_router(ad.router, prefix="/api/ads",tags=["ads"])
 

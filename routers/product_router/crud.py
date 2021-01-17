@@ -48,7 +48,7 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
                 new_product.events.append(event)
         # append to location
         locations = db.query(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
-        for id in payload.location_ids:
+        for id in payload.locatnon_ids:
             location = db.query(Location).filter(Location.id == id).first()
             if location in locations.all():
                 new_product.locations.append(location) 
@@ -68,12 +68,18 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def read_products(skip, limit, search, value, location_id, db: Session): 
+async def read_products(skip, limit, search, value, location_id, sub_country_id, country_id,db: Session): 
     base = db.query(models.Products)
-    if location_id:
-        location = await read_location_by_id(location_id, db)
-        if location is not None:
-            base = location.location_items
+    if country_id:
+        base = base.join(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
+    elif sub_country_id:
+        base = base.join(Location).join(SubCountry).filter(SubCountry.id == sub_country_id)
+    elif location_id:
+        base = base.join(Location).filter(Location.id == location_id)
+    # if location_id:
+    #     location = await read_location_by_id(location_id, db)
+    #     if location is not None:
+    #         base = location.location_items
     if search and value:
         try:
             base = base.filter(models.Products.__table__.c[search].like("%" + value + "%"))
