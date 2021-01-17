@@ -1,4 +1,4 @@
-from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float, UniqueConstraint
+from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 from ..timeline_router.models import Timeline
 from ..location_router.models import Location
@@ -59,6 +59,7 @@ class DeliveryTimeline(Base):
           UniqueConstraint('delivery_id', 'timeline_id', 'index', name='_delivery_timeline_dti'),
           UniqueConstraint('delivery_id', 'index', name='_delivery_timeline_di'),
           UniqueConstraint('delivery_id', 'title', name='_delivery_timeline_dt'),
+          CheckConstraint('coalesce(timeline_id , title ) is not null'),
      )
 
      delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)

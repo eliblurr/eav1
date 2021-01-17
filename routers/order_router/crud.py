@@ -68,36 +68,37 @@ async def delete_order_state(id:int, db:Session):
 #////////////////////////////////
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
-    # validate -> owner_id, voucher_id[if present]
-    if not await read_user_by_id(payload.owner_id, db):
-        pass # raise HTTPException(status_code=404, detail="user not found")
-    if payload.voucher_id and await read_promo_by_id(payload.voucher_id, db):
-        pass # raise HTTPException(status_code=404, detail="voucher not found")
+    pass
+    # # validate -> owner_id, voucher_id[if present]
+    # if not await read_user_by_id(payload.owner_id, db):
+    #     pass # raise HTTPException(status_code=404, detail="user not found")
+    # if payload.voucher_id and await read_promo_by_id(payload.voucher_id, db):
+    #     pass # raise HTTPException(status_code=404, detail="voucher not found")
         
-    # use delivery address to and delivery price to generate delivery
-    if not await read_delivery_option_by_id(payload.delivery_option_id, db):
-        pass # raise HTTPException(status_code=404, detail="delivery option not found") 
-    if not await read_location_by_id(payload.delivery_address.location_id, db):
-        pass # raise HTTPException(status_code=404, detail="location not found")
+    # # use delivery address to and delivery price to generate delivery
+    # if not await read_delivery_option_by_id(payload.delivery_option_id, db):
+    #     pass # raise HTTPException(status_code=404, detail="delivery option not found") 
+    # if not await read_location_by_id(payload.delivery_address.location_id, db):
+    #     pass # raise HTTPException(status_code=404, detail="location not found")
         
-    # use order items to generate oreder bill
-    for item in payload.order_items:
-        # get purchase type id
-        purchase_type = await read_purchase_type_by_id(item.purchase_type_id, db)
+    # # use order items to generate oreder bill
+    # for item in payload.order_items:
+    #     # get purchase type id
+    #     purchase_type = await read_purchase_type_by_id(item.purchase_type_id, db)
         
-        pass
+    #     pass
     
-    try:
-        # print(type(payload.delivery_address))
-        pass
-    except exc.IntegrityError:
-        db.rollback()
-        print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=409)
-    except:
-        db.rollback()
-        print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500)
+    # try:
+    #     # print(type(payload.delivery_address))
+    #     pass
+    # except exc.IntegrityError:
+    #     db.rollback()
+    #     print("{}".format(sys.exc_info()))
+    #     raise HTTPException(status_code=409)
+    # except:
+    #     db.rollback()
+    #     print("{}".format(sys.exc_info()))
+    #     raise HTTPException(status_code=500)
 
     # delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
     # db.add(delivery) 
@@ -115,7 +116,6 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     # 3. create order
     # 4. create delivery and add to order
     # 5. create payment and add to order
-    pass
 
 async def read_orders():
     # location/country/sub_country -> [Delivery]

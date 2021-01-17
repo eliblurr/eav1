@@ -28,6 +28,8 @@ class OrderState(OrderStateBase):
     class Config:
         orm_mode=True
 
+# ////////////////////
+
 class CreateOrderItem(BaseModel):
     product_id: int
     quantity: int
@@ -38,8 +40,6 @@ class CreateOrderItem(BaseModel):
         orm_mode=True
 
 # //////////////////////
-
-
 
 class OrderBillBase(BaseModel):
     total: float
@@ -67,11 +67,27 @@ class OrderBase(BaseModel):
 
 class CreateOrder(OrderBase):
     owner_id: int
+    voucher_id: Optional[int]
+    
     delivery_price: float
     delivery_option_id: int
-    voucher_id: Optional[int]
-    delivery_address: CreateDeliveryAddress
     order_items: List[CreateOrderItem]
+    delivery_address: CreateDeliveryAddress
+    
+
+    # CreateOrder->{ 
+    # owner_id
+    # status
+    # order_delivery ->{
+
+    # }
+    # order_items->[]:{
+        # product_id
+        # quantity
+        # purchase_type_id
+        # duration
+    # }
+    # }
     
 class UpdateOrder(BaseModel):
     order_state_id: Optional[int]

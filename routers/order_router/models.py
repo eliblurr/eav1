@@ -42,6 +42,7 @@ class OrderBill(Base):
     payment = relationship('Payment', backref="order_bill", uselist=False, cascade="all, delete")
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    # promo_voucher
 
 class OrderItems(Base):
     __tablename__ = "order_items"
