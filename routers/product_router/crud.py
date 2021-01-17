@@ -31,20 +31,10 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
         urls, folder_name = await image_folder_io.create(images, 700, 500)
         new_product = models.Products( **payload.dict(exclude={'category_ids', 'event_ids', 'location_ids', 'payment_info', 'country_id'}),  weight_unit_id=country.weight_unit_id)
         db.add(new_product)
-        #  await read_purchase_type_by_id(payload.payment_info.purchase_type_id, db),
         for purchase_type in payload.payment_info:
             if await read_purchase_type_by_id(purchase_type.purchase_type_id, db):
                 payment_info = models.ProductPaymentInfo(**purchase_type.dict(), currency_id=country.currency_id)
                 new_product.payment_info.append(payment_info)
-
-            # print(payload.payment_info)
-            # print(purchase_type.purchase_type_id)
-                # print(type(payment_info))
-                # print(payment_info.purchase_type_id)
-                # print(payment_info.currency_id)
-                
-        # return
-        
         db.flush()
         # append to category
         for id in payload.category_ids:
@@ -66,7 +56,6 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
         for url in urls:
             url = models.ProductImages(image_url=url, folder_name=folder_name)
             new_product.images.append(url)
-        
         db.commit()
         db.refresh(new_product)
         return new_product
@@ -78,44 +67,6 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
-    # try:
-    #     urls, folder_name = await image_folder_io.create(images, 700, 500)
-    #     product_dict = {k:v for (k,v) in payload.dict().items() if k != 'category_ids' and k != 'event_ids' and k != 'location_ids'}
-    #     new_product = models.Products(**product_dict)
-    #     db.add(new_product) 
-    #     db.flush()
-
-        # for id in payload.category_ids:
-        #     category = db.query(Categories).filter(Categories.id == id).first()
-        #     if category is not None:
-        #         new_product.categories.append(category)
-
-    #     for id in payload.event_ids:
-    #         event = db.query(Events).filter(Events.id == id).first()
-    #         if event is not None:
-    #             new_product.events.append(event)
-
-    #     for id in payload.location_ids:
-    #         location = db.query(Location).filter(Location.id == id).first()
-    #         if location is not None:
-    #             new_product.locations.append(location)     
-
-    #     for url in urls:
-    #         url = models.ProductImages(image_url=url, folder_name=folder_name)
-    #         new_product.images.append(url)
-
-    #     db.commit()
-    #     db.refresh(new_product)
-    #     return new_product
-
-    # except exc.IntegrityError:
-    #     db.rollback()    
-    #     print("{}".format(sys.exc_info()))        
-    #     raise HTTPException(status_code=409)  
-    # except:
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=500)
 
 async def read_products(skip, limit, search, value, location_id, db: Session): 
     base = db.query(models.Products)
@@ -215,14 +166,14 @@ async def remove_product_image(id: int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-#///////////////
-
-async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session):
-    product = await read_product_by_id(id, db)
-    if not product:
-        raise HTTPException(status_code=404)
+async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session): 
     try:
+        product = await read_product_by_id(id, db)
         payment_info = db.query(models.ProductPaymentInfo).filter(models.ProductPaymentInfo.id==payment_info_id).first()
+        test = (product, payment_info)
+        if not all(test):
+            detail = "product not found" if not test[0] else "payment info not found"
+            raise NotFoundError() 
         if payment_info in product.payment_info:
             product.payment_info.remove(payment_info)
         else:
@@ -230,6 +181,8 @@ async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session):
         db.commit()
         db.refresh(product)
         return product
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail=detail)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -239,7 +192,11 @@ async def toggle_product_payment_info(id:int, payment_info_id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-# add/remove payment_info 
+class NotFoundError(Exception):
+    def __init__(self):
+        pass
+
+#///////////////
 
 async def aa(db: Session):
     loc = await read_location_by_id(3, db)
@@ -248,7 +205,3 @@ async def aa(db: Session):
     print(loc.sub_country.country.weight_unit.title)
     print(loc.sub_country.country.weight_unit.symbol)
     return 
-
-class NotFoundError(Exception):
-    def __init__(self):
-        pass
