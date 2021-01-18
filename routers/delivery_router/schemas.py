@@ -76,7 +76,7 @@ class CreateDeliveryTimeline(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
-    timeline_id: int
+    timeline_id: Optional[int]
     
     @validator('index')
     def index_validation(cls, index):

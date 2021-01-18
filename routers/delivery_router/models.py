@@ -60,7 +60,8 @@ class DeliveryTimeline(Base):
           CheckConstraint('coalesce(timeline_id , title ) is not null'),
      )
 
-     delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)
+     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+     delivery_id = Column(Integer, ForeignKey("delivery.id"), nullable=False)
      index = Column(Integer, nullable=False)
      title = Column(String, nullable=True)
      metatitle = Column(String, nullable=True)
