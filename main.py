@@ -97,6 +97,7 @@ from routers.faqs_router import main as faqs
 from routers.t_c_router import main as t_c
 from routers.ad_router import main as ad
 
+
 # api.include_router(purchase_type.router,prefix="/api/purchase_type",tags=["purchase_type"])
 # api.include_router(subscriptions.router,prefix="/api/subscriptions",tags=["subscriptions"])
 # api.include_router(announcement.router,prefix="/api/announcements",tags=["announcements"])
@@ -115,6 +116,7 @@ api.include_router(location.router,prefix="/api/locations",tags=["location"])
 # api.include_router(promo.router,prefix="/api/promos",tags=["promo_vouchers"])
 # api.include_router(policies.router,prefix="/api/policies",tags=["policies"])
 # api.include_router(about_us.router,prefix="/api/about_us",tags=["about_us"])
+api.include_router(delivery.router2,prefix="/api/delivery_options",tags=["delivery_options"])
 api.include_router(delivery.router,prefix="/api/delivery",tags=["delivery"])
 # api.include_router(currency.router,prefix="/api/currency",tags=["currency"])
 # api.include_router(product.router,prefix="/api/products",tags=["product"])

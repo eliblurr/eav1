@@ -72,7 +72,7 @@ class DeliveryAddress(DeliveryAddressBase):
 
 class CreateDeliveryTimeline(BaseModel):
     index: int
-    title: str
+    title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
@@ -83,6 +83,13 @@ class CreateDeliveryTimeline(BaseModel):
         if not index:
             raise ValueError("index cannot be null or 0")
         return index
+    
+    @validator('timeline_id')
+    def not_null(cls, timeline_id, values):
+        if not (timeline_id or values['title']):
+            # ( and values['title'])
+            raise ValueError("both timeline_id and title cannot be None")
+        return timeline_id
 
 class DeliveryTimeline(BaseModel):
     index: int

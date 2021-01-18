@@ -239,8 +239,3 @@ async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     if not delivery:
         raise HTTPException(status_code=404)
     return delivery.delivery_timeline
-  
-# raise HTTPException(status_code=404, detail='delivery option not found')
-# raise HTTPException(status_code=404, detail='location not found')
-# if payload.order_id and not await read_order_by_id(payload.order_id, db):
-#     raise HTTPException(status_code=404, detail='order not found')
