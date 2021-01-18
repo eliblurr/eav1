@@ -1,7 +1,7 @@
 from services.pricing import calculate_delivery_option_price
 from ..location_router.crud import read_location_by_id
 from ..timeline_router.crud import read_timeline_by_id
-from ..order_router.crud import read_order_by_id
+# from ..order_router.crud import read_order_by_id
 from sqlalchemy.orm import Session, exc as orm_exc
 from exceptions import NotFoundError
 from fastapi import HTTPException
@@ -54,13 +54,13 @@ async def read_delivery_option_by_id(id:int, db:Session):
 async def update_delivery_option(id:int, payload:schemas.UpdateDeliveryOption, db:Session):
     try:
         if not await read_delivery_option_by_id(id, db):
-            raise NotFoundError()
+            raise NotFoundError('delivery option not found')
         updated = db.query(models.DeliveryOption).filter(models.DeliveryOption.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
         if bool(updated):
             return await read_delivery_option_by_id(id, db)
     except NotFoundError:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -86,7 +86,7 @@ async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Ses
     try:
         delivery_option = await read_delivery_option_by_id(id, db)
         if not delivery_option:
-            raise NotFoundError()
+            raise NotFoundError('delivery option not found')
         for id in location_ids:
             location = await read_location_by_id(id, db)
             if location and location not in delivery_option.locations:
@@ -95,7 +95,7 @@ async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Ses
         db.refresh(delivery_option)
         return delivery_option
     except NotFoundError:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
@@ -109,7 +109,7 @@ async def remove_location_from_delivery_option(id:int, location_ids:List[int], d
     try:
         delivery_option = await read_delivery_option_by_id(id, db)
         if not delivery_option:
-            raise NotFoundError()
+            raise NotFoundError('delivery option not found')
         for id in location_ids:
             location = await read_location_by_id(id, db)
             if location and location in delivery_option.locations:
@@ -118,7 +118,7 @@ async def remove_location_from_delivery_option(id:int, location_ids:List[int], d
         db.refresh(delivery_option)
         return delivery_option
     except NotFoundError:
-        raise HTTPException(status_code=404)
+        raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
@@ -131,13 +131,11 @@ async def remove_location_from_delivery_option(id:int, location_ids:List[int], d
 # delivery
 
 async def create_delivery(payload:schemas.CreateDelivery, db:Session):
-    if not await read_delivery_option_by_id(payload.delivery_option_id, db):
-        raise HTTPException(status_code=404, detail='delivery option not found')
-    if not await read_location_by_id(payload.delivery_address.location_id, db):
-        raise HTTPException(status_code=404, detail='location not found')
-    if payload.order_id and not await read_order_by_id(payload.order_id, db):
-        raise HTTPException(status_code=404, detail='order not found')
     try:
+        if not await read_delivery_option_by_id(payload.delivery_option_id, db):
+            raise NotFoundError('delivery option not found')
+        if not await read_location_by_id(payload.delivery_address.location_id, db):
+            raise NotFoundError('location not found')
         delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
         db.add(delivery) 
         db.flush()
@@ -146,6 +144,8 @@ async def create_delivery(payload:schemas.CreateDelivery, db:Session):
         db.commit()   
         db.refresh(delivery)     
         return delivery
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -239,3 +239,8 @@ async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     if not delivery:
         raise HTTPException(status_code=404)
     return delivery.delivery_timeline
+  
+# raise HTTPException(status_code=404, detail='delivery option not found')
+# raise HTTPException(status_code=404, detail='location not found')
+# if payload.order_id and not await read_order_by_id(payload.order_id, db):
+#     raise HTTPException(status_code=404, detail='order not found')
