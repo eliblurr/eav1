@@ -33,7 +33,7 @@ class DeliveryAddress(Base):
      date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
      delivery_id = Column(Integer, ForeignKey("delivery.id"), nullable=False)
      location_id = Column(Integer, ForeignKey('locations.id'))
-     location = relationship('Location')
+     location = relationship('Location', uselist=False)
      
 class DeliveryOption(Base):
      __tablename__ = "delivery_options"
@@ -49,8 +49,6 @@ class DeliveryOption(Base):
      date_created = Column(DateTime, default=datetime.datetime.utcnow)
      date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
      deliveries = relationship('Delivery', backref='delivery_option', uselist=True, lazy="dynamic")
-     # locations = relationship('Location', backref='delivery_options')
-     # location_id = Column(Integer, ForeignKey('locations.id'))
      price_to_pay = 0
      
 class DeliveryTimeline(Base):
@@ -83,3 +81,5 @@ class DeliveryTimeline(Base):
 # UniqueConstraint('delivery_id', 'timeline_id', 'index', name='_delivery_timeline_dti'),
 # UniqueConstraint('delivery_id', 'index', name='_delivery_timeline_di'),
 # UniqueConstraint('delivery_id', 'title', name='_delivery_timeline_dt'),
+# locations = relationship('Location', backref='delivery_options')
+# location_id = Column(Integer, ForeignKey('locations.id'))

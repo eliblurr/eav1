@@ -40,21 +40,6 @@ class DeliveryOption(DeliveryOptionBase):
     class Config:
         orm_mode=True
 
-# id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-# title = Column(String, nullable=False)
-# metatitle = Column(String, nullable=True)
-# description = Column(String, nullable=True)
-# rate = Column(Float, nullable=False, default=0) 
-# max_duration = Column(Integer, nullable=True)
-# min_duration = Column(Integer, nullable=False)
-# status = Column(Boolean, default=True, nullable=False)
-# date_created = Column(DateTime, default=datetime.datetime.utcnow)
-# date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-# deliveries = relationship('Delivery', backref='delivery_option', uselist=True, lazy="dynamic")
-# price_to_pay = 0
-
-# ///////////
-
 class DeliveryAddressBase(BaseModel):
     first_name: str
     middle_name: Optional[str]
@@ -63,7 +48,7 @@ class DeliveryAddressBase(BaseModel):
     address_line_1: str
     address_line_2: Optional[str]
     status: Optional[bool]
-    
+
 class CreateDeliveryAddress(DeliveryAddressBase):
     location_id: int
 
@@ -85,76 +70,54 @@ class DeliveryAddress(DeliveryAddressBase):
     class Config:
         orm_mode=True
 
-class DeliveryBase(BaseModel):
-    price: float
-    status: Optional[bool]
-    order_id: Optional[int]
-    delivery_address: CreateDeliveryAddress
-    
-class CreateDelivery(DeliveryBase):
-    delivery_option_id: int
-
-class UpdateDelivery(BaseModel):
-    status: Optional[bool]
-    price: Optional[float]
-    price: Optional[float]
-
 class CreateDeliveryTimeline(BaseModel):
     index: int
-    timeline_id: int
     title: str
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
-
-    @validator('timeline_id')
-    def timeline_validation(cls, v, values, **kwargs):
-        if not v:
-            raise ValueError('timeline_id cannot be empty or 0')
-        return v
+    timeline_id: int
     
     @validator('index')
-    def index_validation(cls, v):
-        if not v:
+    def index_validation(cls, index):
+        if not index:
             raise ValueError("index cannot be null or 0")
-        return v
-
-#///////////////////////////////////
+        return index
 
 class DeliveryTimeline(BaseModel):
     index: int
+    delivery_id: int
     title: Optional[str]
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
     date_created: datetime.datetime
     date_modified: datetime.datetime
-    timeline: Timeline
-    delivery_id: int
-
+    timeline: Optional[Timeline]
+    
     class Config:
         orm_mode=True
+
+class DeliveryBase(BaseModel):
+    price: float
+    status: Optional[bool]
+    order_id: Optional[int]
+
+class CreateDelivery(DeliveryBase):
+    delivery_option_id: int
+    delivery_address: CreateDeliveryAddress
+
+class UpdateDelivery(BaseModel):
+    status: Optional[bool]
+    price: Optional[float]
 
 class Delivery(DeliveryBase):
     id: int
     delivery_option: DeliveryOption
     delivery_address: DeliveryAddress
-    # delivery_timeline: List[DeliveryTimeline]
-    # delivery_timeline: Optional[List[DeliveryTimeline]]
+    delivery_timeline: List[DeliveryTimeline]
     date_created: datetime.datetime
     date_modified: datetime.datetime
 
     class Config:
         orm_mode=True
-
-  # delivery_id = Column(Integer, ForeignKey("delivery.id"), primary_key=True)
-    #  timeline_id = Column(Integer, ForeignKey("timeline.id"), primary_key=True)
-    #  index = Column(Integer, nullable=False,  primary_key=True)
-    #  title = Column(String, nullable=True)
-    #  metatitle = Column(String, nullable=True)
-    #  description = Column(String, nullable=True)
-    #  status = Column(Boolean, default=True, nullable=True)
-    #  date_created = Column(DateTime, default=datetime.datetime.utcnow)
-    #  date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    #  timeline = relationship("Timeline", back_populates="delivery")
-    #  delivery
