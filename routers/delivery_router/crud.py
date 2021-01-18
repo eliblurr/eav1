@@ -2,13 +2,13 @@ from services.pricing import calculate_delivery_option_price
 from ..location_router.crud import read_location_by_id
 from ..timeline_router.crud import read_timeline_by_id
 from sqlalchemy.orm import Session, exc as orm_exc
+from exceptions import NotFoundError
 from fastapi import HTTPException
 from sqlalchemy import exc, and_
 from . import models, schemas
 from typing import List
 import sys
 
-# delivery options
 async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Session):
     try:
         delivery_option = models.DeliveryOption(**payload.dict(exclude={'location_ids'}))
@@ -30,11 +30,11 @@ async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Sessi
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def read_delivery_option(skip:int, limit:int, search:str, value:str, location_id:int, total_weight_in_kg:float, db:Session):
+async def read_delivery_option(skip:int, limit:int, search:str, value:str, location_id:int, weight:float, db:Session):
     base = db.query(models.DeliveryOption)
-    if location_id:
+    if location_id: 
         location = await read_location_by_id(location_id, db)
-        if location is not None:
+        if location:
             base = location.loction_delivery_options
     if search and value:
         try:
@@ -42,22 +42,24 @@ async def read_delivery_option(skip:int, limit:int, search:str, value:str, locat
         except KeyError:
             res = base.offset(skip).limit(limit).all()
     res = base.offset(skip).limit(limit).all()
-    if total_weight_in_kg:
+    if weight:
         for item in res:
-            item.price_to_pay = await calculate_delivery_option_price(total_weight_in_kg, item.rate)
+            item.price_to_pay = await calculate_delivery_option_price(weight, item.rate)
     return res
 
 async def read_delivery_option_by_id(id:int, db:Session):
     return db.query(models.DeliveryOption).filter(models.DeliveryOption.id==id).first()
 
 async def update_delivery_option(id:int, payload:schemas.UpdateDeliveryOption, db:Session):
-    if not await read_delivery_option_by_id(id, db):
-        raise HTTPException(status_code=404)
     try:
+        if not await read_delivery_option_by_id(id, db):
+            raise NotFoundError()
         updated = db.query(models.DeliveryOption).filter(models.DeliveryOption.id == id).update(payload.dict(exclude_unset=True))
         db.commit()
         if bool(updated):
             return await read_delivery_option_by_id(id, db)
+    except NotFoundError:
+        raise HTTPException(status_code=404)
     except exc.IntegrityError:
         db.rollback()
         print("{}".format(sys.exc_info()))
@@ -80,17 +82,19 @@ async def delete_delivery_option(id:int, db:Session):
         raise HTTPException(status_code=500)
 
 async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Session):
-    delivery_option = await read_delivery_option_by_id(id, db)
-    if not delivery_option:
-        raise HTTPException(status_code=404)
     try:
+        delivery_option = await read_delivery_option_by_id(id, db)
+        if not delivery_option:
+            raise NotFoundError()
         for id in location_ids:
             location = await read_location_by_id(id, db)
-            if location:
+            if location and location not in delivery_option.locations:
                 delivery_option.locations.append(location)
         db.commit()
         db.refresh(delivery_option)
         return delivery_option
+    except NotFoundError:
+        raise HTTPException(status_code=404)
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
@@ -101,17 +105,19 @@ async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Ses
         raise HTTPException(status_code=500)
 
 async def remove_location_from_delivery_option(id:int, location_ids:List[int], db:Session):
-    delivery_option = await read_delivery_option_by_id(id, db)
-    if not delivery_option:
-        raise HTTPException(status_code=404)
     try:
+        delivery_option = await read_delivery_option_by_id(id, db)
+        if not delivery_option:
+            raise NotFoundError()
         for id in location_ids:
             location = await read_location_by_id(id, db)
-            if location:
+            if location and location in delivery_option.locations:
                 delivery_option.locations.remove(location)
         db.commit()
         db.refresh(delivery_option)
         return delivery_option
+    except NotFoundError:
+        raise HTTPException(status_code=404)
     except exc.IntegrityError:
         db.rollback()      
         print("{}".format(sys.exc_info()))
@@ -242,3 +248,8 @@ async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     return delivery.timeline
     # .all()
     # .offset(skip).limit(limit).all()
+
+# if country_id and await read_country_by_id(country_id, db):
+#     base = base.join(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
+# elif sub_country_id and await read_sub_country_by_id(sub_country_id, db):
+#     base = base.join(Location).join(SubCountry).filter(SubCountry.id == sub_country_id)

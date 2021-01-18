@@ -1,16 +1,16 @@
 from ..timeline_router.schemas import Timeline
 from ..location_router.schemas import Location
-from typing import Optional, List
 from pydantic import BaseModel, validator
+from typing import Optional, List
 import datetime
 
 class DeliveryOptionBase(BaseModel):
     title: str
+    metatitle: Optional[str]
+    description: Optional[str]
     rate: float
     min_duration: int
     max_duration: Optional[int]
-    metatitle: Optional[str]
-    description: Optional[str]
     status: Optional[bool]
 
     @validator('max_duration')
@@ -20,15 +20,15 @@ class DeliveryOptionBase(BaseModel):
         return value
 
 class CreateDeliveryOption(DeliveryOptionBase):
-    location_ids: List[int] = []
+    location_ids: List[int]
 
 class UpdateDeliveryOption(BaseModel):
     title: Optional[str]
+    metatitle: Optional[str]
+    description: Optional[str]
     rate: Optional[float]
     max_duration: Optional[int]
     min_duration: Optional[int]
-    metatitle: Optional[str]
-    description: Optional[str]
     status: Optional[bool]
 
 class DeliveryOption(DeliveryOptionBase):
@@ -39,6 +39,21 @@ class DeliveryOption(DeliveryOptionBase):
 
     class Config:
         orm_mode=True
+
+# id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+# title = Column(String, nullable=False)
+# metatitle = Column(String, nullable=True)
+# description = Column(String, nullable=True)
+# rate = Column(Float, nullable=False, default=0) 
+# max_duration = Column(Integer, nullable=True)
+# min_duration = Column(Integer, nullable=False)
+# status = Column(Boolean, default=True, nullable=False)
+# date_created = Column(DateTime, default=datetime.datetime.utcnow)
+# date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+# deliveries = relationship('Delivery', backref='delivery_option', uselist=True, lazy="dynamic")
+# price_to_pay = 0
+
+# ///////////
 
 class DeliveryAddressBase(BaseModel):
     first_name: str

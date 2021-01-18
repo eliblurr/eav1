@@ -14,7 +14,7 @@ class Timeline(Base):
     status = Column(Boolean, default=True, nullable=False)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_modified = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    delivery = relationship('DeliveryTimeline', back_populates="timeline")
+    # delivery = relationship('DeliveryTimeline', back_populates="timeline")
 
 @event.listens_for(Timeline.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
