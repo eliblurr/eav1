@@ -10,7 +10,7 @@ router = APIRouter()
 async def create_delivery_option(payload: schemas.CreateDeliveryOption, db:Session=Depends(get_db)):
     return await crud.create_delivery_option(payload, db)
 
-@router.get("_options/", description="read delivery options") #, response_model=List[schemas.DeliveryOption]
+@router.get("_options/", description="read delivery options", response_model=List[schemas.DeliveryOption])
 async def read_delivery_option(skip:int=0, limit:int=100, search:str=None, value:str=None, location_id:int=0, weight:float=0, db:Session=Depends(get_db)):
     return await crud.read_delivery_option(skip, limit, search, value, location_id, weight, db)
 
@@ -36,6 +36,7 @@ async def add_location_to_delivery_option(id:int, location_ids:List[int], db:Ses
 @router.delete("_options/{id}/locations", description="add", status_code=status.HTTP_202_ACCEPTED)
 async def remove_location_from_delivery_option(id:int, location_ids:List[int], db:Session=Depends(get_db)):
     return await crud.remove_location_from_delivery_option(id, location_ids, db)
+
 # delivery
 
 # @router.post("/", description="create delivery", status_code=status.HTTP_201_CREATED, response_model=schemas.Delivery)

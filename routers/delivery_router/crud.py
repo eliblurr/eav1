@@ -248,8 +248,3 @@ async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
     return delivery.timeline
     # .all()
     # .offset(skip).limit(limit).all()
-
-# if country_id and await read_country_by_id(country_id, db):
-#     base = base.join(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
-# elif sub_country_id and await read_sub_country_by_id(sub_country_id, db):
-#     base = base.join(Location).join(SubCountry).filter(SubCountry.id == sub_country_id)
