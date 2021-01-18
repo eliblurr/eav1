@@ -39,9 +39,9 @@ async def remove_location_from_delivery_option(id:int, location_ids:List[int], d
 
 # delivery
 
-# @router.post("/", description="create delivery", status_code=status.HTTP_201_CREATED, response_model=schemas.Delivery)
-# async def create_delivery(payload:schemas.CreateDelivery, db:Session=Depends(get_db)):
-#     return await crud.create_delivery(payload, db)
+@router.post("/", description="create delivery", status_code=status.HTTP_201_CREATED, response_model=schemas.Delivery)
+async def create_delivery(payload:schemas.CreateDelivery, db:Session=Depends(get_db)):
+    return await crud.create_delivery(payload, db)
 
 # @router.get("/", description="read delivery", response_model=List[schemas.Delivery])
 # async def read_delivery(skip:int=0, limit:int=100, search:str=None, value:str=None, location_id:int=0, db:Session=Depends(get_db)):
