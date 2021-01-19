@@ -234,7 +234,7 @@ async def remove_delivery_timeline(id:int, db:Session):
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-async def read_delivery_timeline(id:int, skip:int, limit:int, db:Session):
+async def read_delivery_timeline(id:int, db:Session):
     delivery = await read_delivery_by_id(id, db)
     if not delivery:
         raise HTTPException(status_code=404)

@@ -58,7 +58,7 @@ class DeliveryTimeline(Base):
           UniqueConstraint('delivery_id', 'timeline_id', 'index', name='_delivery_timeline_dti'),
           UniqueConstraint('delivery_id', 'index', 'title', name='_delivery_timeline_dit'),
           UniqueConstraint('delivery_id', 'index', name='_delivery_timeline_di'),
-          CheckConstraint('coalesce(timeline_id , title ) is not null'),
+          CheckConstraint('coalesce(timeline_id , title ) is not null', name='_title_timeline_not_null'),
      )
 
      id = Column(Integer, primary_key=True, index=True, autoincrement=True)

@@ -38,8 +38,8 @@ async def remove_delivery_timeline(id:int, db:Session=Depends(get_db)):
     return await crud.remove_delivery_timeline(id, db)
 
 @router.get("_timeline/{id}", description="read delivery timeline", response_model=List[schemas.DeliveryTimeline])
-async def read_delivery_timeline(id:int, skip:int=0, limit:int=100, db:Session=Depends(get_db)):
-    return await crud.read_delivery_timeline(id, skip, limit, db)
+async def read_delivery_timeline(id:int, db:Session=Depends(get_db)):
+    return await crud.read_delivery_timeline(id, db)
 
 router2 = APIRouter()
 
