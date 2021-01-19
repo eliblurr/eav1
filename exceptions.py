@@ -2,6 +2,10 @@ class NotFoundError(Exception):
     def __init__(self, message:str=None):
         self.message = message
 
+class UnAcceptableError(Exception):
+    def __init__(self, message:str=None):
+        self.message = message
+
 # class NotFoundError_(Exception):
 #     def __init__(self, expression, message):
 #         self.expression = expression

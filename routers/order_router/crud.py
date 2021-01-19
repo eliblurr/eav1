@@ -3,6 +3,7 @@ from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..product_router.crud import read_product_by_id
 from ..promo_router.crud import read_promo_by_id
 from ..users_router.crud import read_user_by_id
+from exceptions import UnAcceptableError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
@@ -55,20 +56,25 @@ async def update_order_state(id:int, payload:schemas.UpdateOrderState, db:Sessio
 
 async def delete_order_state(id:int, db:Session):
     try:
-        order_state = await read_order_state_by_id(id, db)
+        order_state = await read_order_state_by_id(id, db)        
         if order_state:
+            if len(order_state.orders.all()):
+                raise UnAcceptableError('cannot delete order state with children') 
             db.delete(order_state)
         db.commit()
         return True
+    except UnAcceptableError:
+        raise HTTPException(status_code=406, detail="{}".format(sys.exc_info()[1]))
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
         raise HTTPException(status_code=500)
 
-#////////////////////////////////
-
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     pass
+    
+#////////////////////////////////
+
     # # validate -> owner_id, voucher_id[if present]
     # if not await read_user_by_id(payload.owner_id, db):
     #     pass # raise HTTPException(status_code=404, detail="user not found")
@@ -127,9 +133,6 @@ async def read_order_by_id():
     pass
 
 async def update_order():
-    pass
-
-async def update_order_state():
     pass
 
 async def delete_order():
