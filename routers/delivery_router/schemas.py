@@ -87,7 +87,6 @@ class CreateDeliveryTimeline(BaseModel):
     @validator('timeline_id')
     def not_null(cls, timeline_id, values):
         if not (timeline_id or values['title']):
-            # ( and values['title'])
             raise ValueError("both timeline_id and title cannot be None")
         return timeline_id
 
