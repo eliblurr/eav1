@@ -3,7 +3,7 @@ from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..product_router.crud import read_product_by_id
 from ..promo_router.crud import read_promo_by_id
 from ..users_router.crud import read_user_by_id
-from exceptions import UnAcceptableError
+from exceptions import UnAcceptableError, NotFoundError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
@@ -72,28 +72,45 @@ async def delete_order_state(id:int, db:Session):
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     total=0
-    for item in payload.order_items:
-        product = await read_product_by_id(item.product_id, db)
-        if product:
-            if item.quantity >= product.available_quantity:
-                item.quantity = product.available_quantity
-            product.available_quantity -= item.quantity
-            payment_info = next((info for info in product.payment_info if info.purchase_type_id == item.purchase_type_id), None)
-            if not payment_info:   
-                raise HTTPException(status_code=404, detail="purchase type seleced for product with id {} not valid".format(product.id))
-            total+=item.quantity/payment_info.batch_size * payment_info.batch_price
+    try:
+        # if not await read_delivery_option_by_id(payload.delivery_option_id, db):
+        #     raise NotFoundError('delivery option not found')
+        # if not await read_location_by_id(payload.delivery_address.location_id, db):
+        #     raise NotFoundError('location not found')
 
+        for item in payload.order_items:
+            product = await read_product_by_id(item.product_id, db)
+            if product:
+                if item.quantity >= product.available_quantity:
+                    item.quantity = product.available_quantity
+                product.available_quantity -= item.quantity
+                payment_info = next((info for info in product.payment_info if info.purchase_type_id == item.purchase_type_id), None)
+                if not payment_info:   
+                    raise HTTPException(status_code=404, detail="purchase type seleced for product with id {} not valid".format(product.id))
+                total+=item.quantity/payment_info.batch_size * payment_info.batch_price
+        
+        
+        # delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
+        # db.add(delivery) 
+        # db.flush()
+        # delivery_address = models.DeliveryAddress(**payload.delivery_address.dict(), delivery_id=delivery.id)
+        # db.add(delivery_address) 
+        
+        print(total)  
+        total = round(total,2)
+        print(total)
 
-    print(total)  
-    total = round(total,2)
-    print(total) 
     
-    
-    # test = [1,2,3,4,5,6,7,5,4.54]
-    # test2 = [{'a':45},{'a':3},{'a':1},{'a':12},{'a':78},{'a':43},{'a':5},]
-
-    # res = sum(test)
-    # res2 = sum(item['a'] for item in test2)
+    except NotFoundError:
+        raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
+    except exc.IntegrityError:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=409)
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
     # print(res)
     # print(res2)
 
@@ -176,3 +193,7 @@ async def delete_order():
 # read order by id
 # update order/order state
 # delete order
+# test = [1,2,3,4,5,6,7,5,4.54]
+# test2 = [{'a':45},{'a':3},{'a':1},{'a':12},{'a':78},{'a':43},{'a':5},]
+# res = sum(test)
+# res2 = sum(item['a'] for item in test2)

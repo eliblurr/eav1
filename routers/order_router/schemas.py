@@ -1,4 +1,4 @@
-from ..delivery_router.schemas import Delivery, DeliveryAddress, CreateDeliveryAddress
+from ..delivery_router.schemas import Delivery, DeliveryAddress, CreateDeliveryAddress, CreateDelivery
 from ..product_router.schemas import Product
 from ..payment_router.schemas import Payment
 from typing import Optional, List
@@ -86,7 +86,7 @@ class CreateOrder(OrderBase):
     delivery_price: float
     delivery_option_id: int
     order_items: List[CreateOrderItem]
-    delivery_address: CreateDeliveryAddress
+    delivery: CreateDelivery
     
 
     # CreateOrder->{ 
