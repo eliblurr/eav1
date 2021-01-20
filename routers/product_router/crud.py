@@ -48,7 +48,7 @@ async def create_product(payload: schemas.CreateProduct, images, db: Session):
                 new_product.events.append(event)
         # append to location
         locations = db.query(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
-        for id in payload.locatnon_ids:
+        for id in payload.location_ids:
             location = db.query(Location).filter(Location.id == id).first()
             if location in locations.all():
                 new_product.locations.append(location) 

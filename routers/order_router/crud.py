@@ -71,8 +71,40 @@ async def delete_order_state(id:int, db:Session):
         raise HTTPException(status_code=500)
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
-    pass
+    total=0
+    for item in payload.order_items:
+        product = await read_product_by_id(item.product_id, db)
+        if product:
+            if item.quantity >= product.available_quantity:
+                item.quantity = product.available_quantity
+            product.available_quantity -= item.quantity
+            payment_info = next((info for info in product.payment_info if info.purchase_type_id == item.purchase_type_id), None)
+            if not payment_info:   
+                raise HTTPException(status_code=404, detail="purchase type seleced for product with id {} not valid".format(product.id))
+            total+=item.quantity/payment_info.batch_size * payment_info.batch_price
+
+
+    print(total)  
+    total = round(total,2)
+    print(total) 
     
+    
+    # test = [1,2,3,4,5,6,7,5,4.54]
+    # test2 = [{'a':45},{'a':3},{'a':1},{'a':12},{'a':78},{'a':43},{'a':5},]
+
+    # res = sum(test)
+    # res2 = sum(item['a'] for item in test2)
+    # print(res)
+    # print(res2)
+
+
+    
+        
+
+    # calculate order_bill
+    # print(payload.order_items)
+    pass
+
 #////////////////////////////////
 
     # # validate -> owner_id, voucher_id[if present]

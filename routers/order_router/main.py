@@ -32,11 +32,8 @@ async def delete_order_state(id:int, db:Session=Depends(get_db)):
 
 router = APIRouter()
 
-# , response_model=schemas.Order
-@router.post("/", description="create order")
-async def create_order(payload: schemas.CreateOrder, preview:bool=False, db: Session = Depends(get_db)):
-    return
-   
+@router.post("/", description="create order", response_model=schemas.Order)
+async def create_order(payload: schemas.CreateOrder, preview:bool=False, db: Session = Depends(get_db)):   
     return await crud.create_order(payload, preview, db)
 
 # @router.get("/", response_model=List[schemas.Order])

@@ -2,7 +2,7 @@ from ..delivery_router.schemas import Delivery, DeliveryAddress, CreateDeliveryA
 from ..product_router.schemas import Product
 from ..payment_router.schemas import Payment
 from typing import Optional, List
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 import datetime
 
 class OrderStateBase(BaseModel):
@@ -38,6 +38,20 @@ class CreateOrderItem(BaseModel):
    
     class Config:
         orm_mode=True
+
+    @validator('quantity')
+    def validate_quantity(cls, quantity):
+        if quantity <= 0:
+            raise ValueError('quantity cannot be less than 0')
+        return quantity
+
+    @validator('product_id')
+    def validate_product_id(cls, product_id):
+        if product_id <= 0:
+            raise ValueError('product_id cannot be less than 0')
+        return product_id
+
+    
 
 # //////////////////////
 
