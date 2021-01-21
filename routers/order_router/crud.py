@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from . import models, schemas
 from sqlalchemy import exc
-import sys
+import sys, utils
 
 async def create_order_state(payload:schemas.CreateOrderState, db:Session):
     try:
@@ -72,11 +72,17 @@ async def delete_order_state(id:int, db:Session):
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     total=0
+    order_id=1
+    delivery_id=1
     try:
-        # if not await read_delivery_option_by_id(payload.delivery_option_id, db):
-        #     raise NotFoundError('delivery option not found')
-        # if not await read_location_by_id(payload.delivery_address.location_id, db):
-        #     raise NotFoundError('location not found')
+        test = (await read_user_by_id(payload.owner_id, db), not(utils.logical_xor(payload.voucher_id, await read_promo_by_id(payload.voucher_id, db))), await read_delivery_option_by_id(payload.delivery.delivery_option_id, db), await read_location_by_id(payload.delivery.delivery_address.location_id, db))
+        if not all(test):
+            raise NotFoundError('{}'.format('user not found' if not test[0] else 'voucher not found' if not test[1] else 'delivery option not found' if not test[2] else 'delivery location not found'))
+        order = models.Orders(**payload.dict(exclude={'delivery','order_items','voucher_id'}))
+        # print(dir(order))
+        print(order.owner_id)
+        db.flush()
+        return
 
         for item in payload.order_items:
             product = await read_product_by_id(item.product_id, db)
@@ -90,15 +96,14 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
                 total+=item.quantity/payment_info.batch_size * payment_info.batch_price
         
         
-        # delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
-        # db.add(delivery) 
-        # db.flush()
-        # delivery_address = models.DeliveryAddress(**payload.delivery_address.dict(), delivery_id=delivery.id)
-        # db.add(delivery_address) 
+
+        delivery = models.Delivery(**payload.delivery.dict(exclude={'delivery_address','order_id'}),order_id=order_id)
+        db.add(delivery) 
+        db.flush()
+        delivery_address = models.DeliveryAddress(**payload.delivery.delivery_address.dict(), delivery_id=delivery.id)
+        db.add(delivery_address) 
         
-        print(total)  
-        total = round(total,2)
-        print(total)
+        # print(round(total,2))
 
     
     except NotFoundError:

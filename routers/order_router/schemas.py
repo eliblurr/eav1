@@ -10,6 +10,7 @@ class OrderStateBase(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
+    default: Optional[bool]
 
 class CreateOrderState(OrderStateBase):
     pass
@@ -19,6 +20,7 @@ class UpdateOrderState(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
+    default: Optional[bool]
 
 class OrderState(OrderStateBase):
     id:int
@@ -27,8 +29,6 @@ class OrderState(OrderStateBase):
 
     class Config:
         orm_mode=True
-
-# ////////////////////
 
 class CreateOrderItem(BaseModel):
     product_id: int
@@ -51,7 +51,7 @@ class CreateOrderItem(BaseModel):
             raise ValueError('product_id cannot be less than 0')
         return product_id
 
-    
+# ////////////////////
 
 # //////////////////////
 
@@ -82,9 +82,6 @@ class OrderBase(BaseModel):
 class CreateOrder(OrderBase):
     owner_id: int
     voucher_id: Optional[int]
-    
-    delivery_price: float
-    delivery_option_id: int
     order_items: List[CreateOrderItem]
     delivery: CreateDelivery
     
