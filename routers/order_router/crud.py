@@ -72,18 +72,21 @@ async def delete_order_state(id:int, db:Session):
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     total=0
-    order_id=1
-    delivery_id=1
     try:
-        test = (await read_user_by_id(payload.owner_id, db), not(utils.logical_xor(payload.voucher_id, await read_promo_by_id(payload.voucher_id, db))), await read_delivery_option_by_id(payload.delivery.delivery_option_id, db), await read_location_by_id(payload.delivery.delivery_address.location_id, db))
+        default_order_state = db.query(models.OrderState).filter(models.OrderState.default == True).first()
+        test = (await read_user_by_id(payload.owner_id, db), not(utils.logical_xor(payload.voucher_id, await read_promo_by_id(payload.voucher_id, db))), await read_delivery_option_by_id(payload.delivery.delivery_option_id, db), await read_location_by_id(payload.delivery.delivery_address.location_id, db), default_order_state)
         if not all(test):
-            raise NotFoundError('{}'.format('user not found' if not test[0] else 'voucher not found' if not test[1] else 'delivery option not found' if not test[2] else 'delivery location not found'))
-        order = models.Orders(**payload.dict(exclude={'delivery','order_items','voucher_id'}))
-        # print(dir(order))
-        print(order.owner_id)
+            raise NotFoundError('{}'.format('user not found' if not test[0] else 'voucher not found' if not test[1] else 'delivery option not found' if not test[2] else 'delivery location not found' if not test[3] else 'default order state not found'))
+            
+        order = models.Orders(**payload.dict(exclude={'delivery','order_items','voucher_id'}), order_state_id=default_order_state.id)
         db.flush()
-        return
+        delivery = models.Delivery(**payload.delivery.dict(exclude={'delivery_address','order_id'}), order_id=order.id)
+        db.add(delivery)  
+        delivery_address = models.DeliveryAddress(**payload.delivery.delivery_address.dict(), delivery_id=delivery.id)
+        db.add(delivery_address) 
 
+        # order_items
+        # mod size/quantity
         for item in payload.order_items:
             product = await read_product_by_id(item.product_id, db)
             if product:
@@ -94,18 +97,14 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
                 if not payment_info:   
                     raise HTTPException(status_code=404, detail="purchase type seleced for product with id {} not valid".format(product.id))
                 total+=item.quantity/payment_info.batch_size * payment_info.batch_price
-        
-        
 
-        delivery = models.Delivery(**payload.delivery.dict(exclude={'delivery_address','order_id'}),order_id=order_id)
-        db.add(delivery) 
-        db.flush()
-        delivery_address = models.DeliveryAddress(**payload.delivery.delivery_address.dict(), delivery_id=delivery.id)
-        db.add(delivery_address) 
+        # order_bill
+        # payment
+        # amount
+        # status
+        # order_id
         
         # print(round(total,2))
-
-    
     except NotFoundError:
         raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:

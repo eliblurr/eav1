@@ -1,9 +1,10 @@
-from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float, CheckConstraint
+from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float, CheckConstraint, exc
 from sqlalchemy.orm import relationship, backref
 from ..delivery_router.models import Delivery, DeliveryAddress, DeliveryOption, DeliveryTimeline
 from ..payment_router.models import Payment
 from database import Base, SessionLocal
 import datetime, utils
+# from fastapi import HTTPException
 
 code = lambda length:utils.gen_alphanumeric_code_lower(length)
 
@@ -23,10 +24,6 @@ class Orders(Base):
   
 class OrderState(Base):
     __tablename__ = "order_state"
-    __table_args__ = (
-        # CheckConstraint('coalesce(timeline_id , title ) is not null;', name='only one default'),
-    )
-    # SELECT COUNT(default) FROM Products WHERE default=
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False, unique=True)
@@ -69,5 +66,18 @@ def insert_initial_values(*args, **kwargs):
     db.add_all([OrderState( title='processing', description="your order has been placed")])
     db.commit()
 
-# "before_insert"
-# "before_insert"
+@event.listens_for(OrderState, 'before_insert')
+def check_default_table(mapper, connection, target):
+    db = SessionLocal()
+    if (db.query(OrderState).filter(OrderState.default == True).count() >= 1) and target.default:
+        raise exc.IntegrityError(None,None,None)
+
+@event.listens_for(OrderState, 'before_update')
+def check_default_table(mapper, connection, target):
+    db = SessionLocal()
+    if (db.query(OrderState).filter(OrderState.default == True).count() >= 1) and target.default:
+        raise exc.IntegrityError(None,None,None)
+
+# __table_args__ = (
+#     CheckConstraint('(select count(default) from order_state where default=1) >= 1', name="default_validation"),
+# )
