@@ -1,5 +1,5 @@
 from ..location_router.crud import read_location_by_id
-from helper import FolderIO, ImageFolderIO
+from base_classes import FolderIO, ImageFolderIO
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from static.main import ad_DIR

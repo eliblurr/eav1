@@ -19,13 +19,12 @@ class Card(BaseModel):
 
 class PaymentBase(BaseModel):
     amount: float
-    card: Optional[Card]
     comment: Optional[str]
     status: Optional[bool]
-    payment_type_id: int
 
 class CreatePayment(PaymentBase):     
-    pass
+    card: Optional[Card]
+    payment_type_id: int
 
 class UpdatePayment(BaseModel):
     amount: Optional[float]
@@ -36,7 +35,8 @@ class UpdatePayment(BaseModel):
 
 class Payment(PaymentBase):
     id: int
-    payment_type: PaymentType
+    card_number_brand: str
+    card_number_masked: str
     date_created: datetime.datetime
     date_modified: datetime.datetime
     

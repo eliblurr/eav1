@@ -1,5 +1,5 @@
 from ..product_router.crud import read_product_by_id
-from helper import FolderIO, ImageFolderIO
+from base_classes import FolderIO, ImageFolderIO
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from static.main import event_DIR

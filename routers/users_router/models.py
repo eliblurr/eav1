@@ -25,7 +25,7 @@ class User(Base):
     products = relationship('Products', backref="owner", uselist=True, cascade="all, delete", lazy='dynamic')
     reviews = relationship('Reviews', backref="author", uselist=True, cascade="all, delete", lazy="dynamic")
     # reset_password_token = relationship('ResetPasswordToken', backref="user", uselist=False, cascade="all, delete")
-    # payments = relationship('Payment', backref="customer", uselist=True, cascade="all, delete", lazy='dynamic')
+    payments = relationship('Payment', backref="user", uselist=True, cascade="all, delete", lazy='dynamic')
 
     @staticmethod
     def generate_hash(password):
