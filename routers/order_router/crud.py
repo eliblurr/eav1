@@ -102,15 +102,17 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
         if payload.voucher_id:
             voucher = await read_promo_by_id(payload.voucher_id, db)
             total -= voucher.discount
-            
+
         # payment
         # wait for stripe payment
         payment = models.Payment(**payload.payment_info.dict(exclude={'card'}), card_number_brand=payload.payment_info.card.number.brand, card_number_masked=payload.payment_info.card.number.masked, amount=total)
+        db.add(payment)
         order_bill = models.OrderBill(amount=total, order_id=order.id, payment=payment)
-        # db.add(order_state) 
-        # db.commit()   
-        # db.refresh(order_state)     
-        # return order_state
+        db.add(order_bill)
+        db.add(order) 
+        db.commit()   
+        db.refresh(order)     
+        return order
     except UnAcceptableError:
         raise HTTPException(status_code=422, detail="{}".format(sys.exc_info()[1]))
     except NotFoundError:
@@ -122,17 +124,10 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     except:
         db.rollback()
         print("{}".format(sys.exc_info()))
-        raise HTTPException(status_code=500)
-    # print(res)
-    # print(res2)
+
+
     # if total < 
 
-
-    
-        
-
-    # calculate order_bill
-    # print(payload.order_items)
 
 #////////////////////////////////
 
