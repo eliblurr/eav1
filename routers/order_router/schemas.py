@@ -1,6 +1,6 @@
 from ..delivery_router.schemas import Delivery, DeliveryAddress, CreateDeliveryAddress, CreateDelivery
 from ..product_router.schemas import Product
-from ..payment_router.schemas import Payment
+from ..payment_router.schemas import Payment, Card
 from typing import Optional, List
 from pydantic import BaseModel, validator
 import datetime
@@ -55,6 +55,10 @@ class CreateOrderItem(BaseModel):
 
 # //////////////////////
 
+class CreateOrderPayment(BaseModel):     
+    card: Optional[Card]
+    payment_type_id: int
+
 class OrderBillBase(BaseModel):
     total: float
     status: Optional[bool]
@@ -84,21 +88,7 @@ class CreateOrder(OrderBase):
     voucher_id: Optional[int]
     order_items: List[CreateOrderItem]
     delivery: CreateDelivery
-    
-
-    # CreateOrder->{ 
-    # owner_id
-    # status
-    # order_delivery ->{
-
-    # }
-    # order_items->[]:{
-        # product_id
-        # quantity
-        # purchase_type_id
-        # duration
-    # }
-    # }
+    payment_info: CreateOrderPayment
     
 class UpdateOrder(BaseModel):
     order_state_id: Optional[int]

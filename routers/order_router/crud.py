@@ -72,21 +72,20 @@ async def delete_order_state(id:int, db:Session):
 
 async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
     total=0
-    try:
+    try:        
         default_order_state = db.query(models.OrderState).filter(models.OrderState.default == True).first()
         test = (await read_user_by_id(payload.owner_id, db), not(utils.logical_xor(payload.voucher_id, await read_promo_by_id(payload.voucher_id, db))), await read_delivery_option_by_id(payload.delivery.delivery_option_id, db), await read_location_by_id(payload.delivery.delivery_address.location_id, db), default_order_state)
         if not all(test):
             raise NotFoundError('{}'.format('user not found' if not test[0] else 'voucher not found' if not test[1] else 'delivery option not found' if not test[2] else 'delivery location not found' if not test[3] else 'default order state not found'))
             
-        order = models.Orders(**payload.dict(exclude={'delivery','order_items','voucher_id'}), order_state_id=default_order_state.id)
+        order = models.Orders(**payload.dict(exclude={'delivery','order_items','voucher_id','payment_info'}), order_state_id=default_order_state.id)
         db.flush()
         delivery = models.Delivery(**payload.delivery.dict(exclude={'delivery_address','order_id'}), order_id=order.id)
         db.add(delivery)  
         delivery_address = models.DeliveryAddress(**payload.delivery.delivery_address.dict(), delivery_id=delivery.id)
         db.add(delivery_address) 
-
+        
         # order_items
-        # mod size/quantity
         for item in payload.order_items:
             product = await read_product_by_id(item.product_id, db)
             if product:
@@ -94,17 +93,26 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
                     item.quantity = product.available_quantity
                 product.available_quantity -= item.quantity
                 payment_info = next((info for info in product.payment_info if info.purchase_type_id == item.purchase_type_id), None)
+                if item.quantity%payment_info.batch_size != 0:
+                    raise UnAcceptableError('invalid purchase quantity selected for {}'.format(product.title))
                 if not payment_info:   
                     raise HTTPException(status_code=404, detail="purchase type seleced for product with id {} not valid".format(product.id))
                 total+=item.quantity/payment_info.batch_size * payment_info.batch_price
 
-        # order_bill
+        if payload.voucher_id:
+            voucher = await read_promo_by_id(payload.voucher_id, db)
+            total -= voucher.discount
+            
         # payment
-        # amount
-        # status
-        # order_id
-        
-        # print(round(total,2))
+        # wait for stripe payment
+        payment = models.Payment(**payload.payment_info.dict(exclude={'card'}), card_number_brand=payload.payment_info.card.number.brand, card_number_masked=payload.payment_info.card.number.masked, amount=total)
+        order_bill = models.OrderBill(amount=total, order_id=order.id, payment=payment)
+        # db.add(order_state) 
+        # db.commit()   
+        # db.refresh(order_state)     
+        # return order_state
+    except UnAcceptableError:
+        raise HTTPException(status_code=422, detail="{}".format(sys.exc_info()[1]))
     except NotFoundError:
         raise HTTPException(status_code=404, detail="{}".format(sys.exc_info()[1]))
     except exc.IntegrityError:
@@ -117,6 +125,7 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
         raise HTTPException(status_code=500)
     # print(res)
     # print(res2)
+    # if total < 
 
 
     
@@ -124,7 +133,6 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
 
     # calculate order_bill
     # print(payload.order_items)
-    pass
 
 #////////////////////////////////
 

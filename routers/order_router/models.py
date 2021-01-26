@@ -63,7 +63,7 @@ class OrderItems(Base):
 @event.listens_for(OrderState.__table__, 'after_create')
 def insert_initial_values(*args, **kwargs):
     db = SessionLocal()
-    db.add_all([OrderState( title='processing', description="your order has been placed")])
+    db.add_all([OrderState( title='processing', description="your order has been placed", default=True)])
     db.commit()
 
 @event.listens_for(OrderState, 'before_insert')
