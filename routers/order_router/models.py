@@ -1,10 +1,9 @@
 from sqlalchemy import event, Boolean, Column, ForeignKey, Integer, String, DateTime, Float, CheckConstraint, exc
-from sqlalchemy.orm import relationship, backref
 from ..delivery_router.models import Delivery, DeliveryAddress, DeliveryOption, DeliveryTimeline
+from sqlalchemy.orm import relationship, backref
 from ..payment_router.models import Payment
 from database import Base, SessionLocal
 import datetime, utils
-# from fastapi import HTTPException
 
 code = lambda length:utils.gen_alphanumeric_code_lower(length)
 
@@ -24,6 +23,9 @@ class Orders(Base):
   
 class OrderState(Base):
     __tablename__ = "order_state"
+    __table_args__ = (
+        CheckConstraint('(select count(default) from order_state where default=1) >= 1', name="default_validation"),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     title = Column(String, nullable=False, unique=True)
@@ -77,7 +79,3 @@ def check_default_table(mapper, connection, target):
     db = SessionLocal()
     if (db.query(OrderState).filter(OrderState.default == True).count() >= 1) and target.default:
         raise exc.IntegrityError(None,None,None)
-
-# __table_args__ = (
-#     CheckConstraint('(select count(default) from order_state where default=1) >= 1', name="default_validation"),
-# )

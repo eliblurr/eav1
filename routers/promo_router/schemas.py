@@ -6,6 +6,7 @@ class PromoVoucherBase(BaseModel):
     title: str
     metatitle: Optional[str]
     description: Optional[str]
+    allowed_coverage: float
     discount: float
     status: bool
 
@@ -17,6 +18,7 @@ class UpdatePromoVoucher(BaseModel):
     metatitle: Optional[str]
     description: Optional[str]
     status: Optional[bool]
+    allowed_coverage: Optional[float]
 
 class PromoVoucher(PromoVoucherBase):
     id: int

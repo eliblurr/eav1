@@ -34,7 +34,7 @@ async def create_promo(payload: schemas.CreatePromoVoucher, db: Session):
 
 async def read_promo(start:float, end:float, skip:int, limit:int, search:str, value:str, db: Session):
     base = db.query(models.PromoVouchers)
-    if start is not None and end is not None and start < end:
+    if (start and end) and (start < end):
         return base.filter(and_(models.PromoVouchers.discount >= start,models.PromoVouchers.discount <= end)).offset(skip).limit(limit).all() 
     if search and value:
         try:

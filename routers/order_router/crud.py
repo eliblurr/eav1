@@ -1,8 +1,9 @@
-from ..delivery_router.crud import read_delivery_option_by_id, read_location_by_id
+from ..delivery_router.crud import read_delivery_option_by_id, read_country_by_id, read_sub_country_by_id, read_location_by_id
 from ..purchase_type_router.crud import read_purchase_type_by_id
 from ..product_router.crud import read_product_by_id
 from ..promo_router.crud import read_promo_by_id
 from ..users_router.crud import read_user_by_id
+from ..location_router.models import Location, SubCountry, Country
 from exceptions import UnAcceptableError, NotFoundError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
@@ -125,75 +126,45 @@ async def create_order(payload:schemas.CreateOrder, preview:bool, db:Session):
         db.rollback()
         print("{}".format(sys.exc_info()))
 
+async def read_orders(skip:int, limit:int, search:str, value:str, location_id:int, sub_country_id:int, country_id:int, order_state_id:int, user_id:int, db: Session):
+    base = db.query(models.Orders)
+    if country_id and await read_country_by_id(country_id, db):
+        base = base.join(Location).join(SubCountry).join(Country).filter(Country.id==country.id)
+    elif sub_country_id and await read_sub_country_by_id(sub_country_id, db):
+        base = base.join(Location).join(SubCountry).filter(SubCountry.id == sub_country_id)
+    elif location_id and await read_location_by_id(location_id, db):
+        base = base.join(Location).filter(Location.id == location_id) 
 
-    # if total < 
+    if order_state_id and await read_order_state_by_id(order_state_id, db):
+        base = base.filter(models.Orders.order_state_id==order_state_id)
+    if user_id and await read_user_by_id(user_id, db):
+        base = base.filter(models.Orders.owner_id==user_id)
 
+    if search and value:
+        try:
+            base = base.filter(models.Orders.__table__.c[search].like("%" + value + "%"))
+        except KeyError:
+            return base.offset(skip).limit(limit).all()
+    return base.offset(skip).limit(limit).all()
+
+async def read_order_by_id(id:int, db:Session):
+    return db.query(models.Orders).filter(models.Orders.id==id).first()
+
+async def delete_order(id:int, db:Session):
+    try:
+        order = await read_order_by_id(id, db)        
+        if order:
+            db.delete(order)
+        db.commit()
+        return True
+    except:
+        db.rollback()
+        print("{}".format(sys.exc_info()))
+        raise HTTPException(status_code=500)
 
 #////////////////////////////////
-
-    # # validate -> owner_id, voucher_id[if present]
-    # if not await read_user_by_id(payload.owner_id, db):
-    #     pass # raise HTTPException(status_code=404, detail="user not found")
-    # if payload.voucher_id and await read_promo_by_id(payload.voucher_id, db):
-    #     pass # raise HTTPException(status_code=404, detail="voucher not found")
-        
-    # # use delivery address to and delivery price to generate delivery
-    # if not await read_delivery_option_by_id(payload.delivery_option_id, db):
-    #     pass # raise HTTPException(status_code=404, detail="delivery option not found") 
-    # if not await read_location_by_id(payload.delivery_address.location_id, db):
-    #     pass # raise HTTPException(status_code=404, detail="location not found")
-        
-    # # use order items to generate oreder bill
-    # for item in payload.order_items:
-    #     # get purchase type id
-    #     purchase_type = await read_purchase_type_by_id(item.purchase_type_id, db)
-        
-    #     pass
-    
-    # try:
-    #     # print(type(payload.delivery_address))
-    #     pass
-    # except exc.IntegrityError:
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=409)
-    # except:
-    #     db.rollback()
-    #     print("{}".format(sys.exc_info()))
-    #     raise HTTPException(status_code=500)
-
-    # delivery = models.Delivery(**payload.dict(exclude={'delivery_address'}))
-    # db.add(delivery) 
-    # db.flush()
-    # delivery_address = models.DeliveryAddress(**payload.delivery_address.dict(), delivery_id=delivery.id)
-    # -----------------------------------------------------------------
-    # ////////
-    # p = Parent() ... order
-    # a = Association(extra_data="some data") ... create order_item object
-    # a.child = Child() ... add product to order_item object product
-    # p.children.append(a) ... add order_item object to order
-    # 1. validate payload
-    # 1. create order bill
-    # 2. make payments
-    # 3. create order
-    # 4. create delivery and add to order
-    # 5. create payment and add to order
-
-async def read_orders():
-    # location/country/sub_country -> [Delivery]
-    # order state
-    # user
-    pass
-
-async def read_order_by_id():
-    pass
-
 async def update_order():
     pass
-
-async def delete_order():
-    pass
-
 
 # create order
 # read orders/user/location

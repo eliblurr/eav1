@@ -20,5 +20,6 @@ class PromoVouchers(Base):
     discount = Column(Float, nullable=False, default=0.0)
     status = Column(Boolean, nullable=False, default=True)
     user_id = Column(Integer, ForeignKey("users.id"))
+    allowed_coverage = Column(Float, nullable=False, default=0.0)
     date_created = Column(DateTime,  default=datetime.datetime.utcnow)
     date_modified = Column(DateTime,  default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
